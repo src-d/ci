@@ -93,10 +93,6 @@ docker-push: docker-start
 		echo "DOCKER_PASSWORD variable cannot be empty."; \
 		exit 1; \
 	fi; \
-	if [ -z "$(DOCKER_REGISTRY)" ]; then \
-		echo "DOCKER_REGISTRY variable cannot be empty."; \
-		exit 1; \
-	fi; \
 	if [ ! -z "$(COMMANDS)" ]; then \
 		cp -r $(BUILD_PATH)/$(PROJECT)_linux_amd64 bin; \
 	fi; \
