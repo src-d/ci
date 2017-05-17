@@ -3,7 +3,7 @@ PROJECT = foo
 COMMANDS = foo bar
 CODECOV_TOKEN = your codecov token
 
-# Including devops Makefile
+# Including ci Makefile
 MAKEFILE = Makefile.main
 CI_REPOSITORY = https://github.com/src-d/ci.git
 CI_FOLDER = .ci

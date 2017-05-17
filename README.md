@@ -20,7 +20,6 @@ Use the files under [examples](https://github.com/src-d/ci/tree/master/examples)
 You will need to configure the following environment variables and make them available during the build process:
 
 * `DOCKER_ORG`: docker organisation name.
-* `DOCKER_EMAIL`: email of the registry account.
 * `DOCKER_USERNAME`: username of the registry account.
 * `DOCKER_PASSWORD`: password of the registry account.
 * `DOCKER_REGISTRY`: docker registry where images will be pushed.

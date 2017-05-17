@@ -12,7 +12,6 @@ POSTRUN ?=
 # Docker configuration
 DOCKER_ORG ?=
 DOCKER_USERNAME ?=
-DOCKER_EMAIL ?=
 DOCKER_PASSWORD ?=
 DOCKER_REGISTRY ?=
 
@@ -67,22 +66,12 @@ dependencies:
 		((retries++)); \
 	done;
 
-docker-start:
-	@if [[ $(CI) && $(DRONE) ]]; then \
-		(docker daemon --host=unix:///var/run/docker.sock --storage-driver=vfs &); \
-		sleep 1; \
-	fi; \
-
-docker-push: docker-start
+docker-push:
 	@if [ "$(BRANCH)" == "master" ]; then \
 		exit; \
 	fi; \
 	if [ -z "$(DOCKER_ORG)" ]; then \
 		echo "DOCKER_ORG variable cannot be empty."; \
-		exit 1; \
-	fi; \
-	if [ -z "$(DOCKER_EMAIL)" ]; then \
-		echo "DOCKER_EMAIL variable cannot be empty."; \
 		exit 1; \
 	fi; \
 	if [ -z "$(DOCKER_USERNAME)" ]; then \
@@ -93,14 +82,10 @@ docker-push: docker-start
 		echo "DOCKER_PASSWORD variable cannot be empty."; \
 		exit 1; \
 	fi; \
-	if [ -z "$(DOCKER_REGISTRY)" ]; then \
-		echo "DOCKER_REGISTRY variable cannot be empty."; \
-		exit 1; \
-	fi; \
 	if [ ! -z "$(COMMANDS)" ]; then \
 		cp -r $(BUILD_PATH)/$(PROJECT)_linux_amd64 bin; \
 	fi; \
-	docker login -e "$(DOCKER_EMAIL)" -u "$(DOCKER_USERNAME)" -p "$(DOCKER_PASSWORD)" $(DOCKER_REGISTRY); \
+	docker login -u "$(DOCKER_USERNAME)" -p "$(DOCKER_PASSWORD)" $(DOCKER_REGISTRY); \
 	for d in $(DOCKERFILES); do \
 		dockerfile=`echo $${d} | cut -d":" -f 1`; \
 		repository=`echo $${d} | cut -d":" -f 2`; \
