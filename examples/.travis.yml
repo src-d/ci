@@ -1,0 +1,30 @@
+language: go
+
+go:
+  - 1.8
+
+sudo: required
+
+services:
+  - docker
+
+install:
+  - make dependencies
+
+script:
+  - make test-coverage
+
+before_deploy:
+  - make packages
+
+deploy:
+  provider: releases
+  api_key: "github api key" 
+  file_glob: true
+  file: build/*
+  skip_cleanup: true
+  on:
+    tags: true
+
+after_deploy:
+  - make docker-push

@@ -1,0 +1,165 @@
+# Default shell
+SHELL := /bin/bash
+
+# Package configuration
+PROJECT ?=
+COMMANDS ?=
+DEPENDENCIES ?=
+DOCKERFILES ?= Dockerfile:$(PROJECT)
+PRERUN ?=
+POSTRUN ?=
+
+# Docker configuration
+DOCKER_ORG ?=
+DOCKER_USERNAME ?=
+DOCKER_EMAIL ?=
+DOCKER_PASSWORD ?=
+DOCKER_REGISTRY ?=
+
+# Checking mandatory variables
+ifndef PROJECT
+$(error ERROR! The PROJECT variable cannot be empty)
+endif
+
+# Environment
+WORKDIR := $(PWD)
+BUILD_PATH := $(WORKDIR)/build
+BUILD ?= $(shell date +"%m-%d-%Y_%H_%M_%S")
+COMMIT ?= $(shell git log --format='%H' -n 1 | cut -c1-10)
+BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
+
+# travis CI
+ifneq ($(origin CI), undefined)
+	COMMIT := $(shell echo $(TRAVIS_COMMIT) | cut -c1-10)
+	BRANCH := $(TRAVIS_BRANCH)
+	TAG := $(TRAVIS_TAG)
+	WORKDIR := $(TRAVIS_BUILD_DIR)
+	BUILD_PATH := $(WORKDIR)/build
+endif
+
+# Packages content
+PKG_OS = darwin linux
+PKG_ARCH = amd64
+
+# Go parameters
+GOCMD = go
+GOBUILD = $(GOCMD) build
+GOCLEAN = $(GOCMD) clean
+GOINSTALL = $(GOCMD) install -v
+GOGET = $(GOCMD) get -v -t
+GOTEST = $(GOCMD) test -v
+
+# Coverage
+COVERAGE_REPORT = coverage.txt
+COVERAGE_PROFILE = profile.out
+COVERAGE_MODE = atomic
+
+# Rules
+dependencies:
+	@for i in $(DEPENDENCIES); do $(GOGET) $$i; done; \
+	retries=0; \
+	while [[ $$retries < 3 ]]; do \
+		cd $(WORKDIR) && $(GOGET) ./...; \
+		if [ $$? == 0 ]; then \
+			break; \
+		fi; \
+		sleep 2; \
+		((retries++)); \
+	done;
+
+docker-start:
+	@if [[ $(CI) && $(DRONE) ]]; then \
+		(docker daemon --host=unix:///var/run/docker.sock --storage-driver=vfs &); \
+		sleep 1; \
+	fi; \
+
+docker-push: docker-start
+	@if [ "$(BRANCH)" == "master" ]; then \
+		exit; \
+	fi; \
+	if [ -z "$(DOCKER_ORG)" ]; then \
+		echo "DOCKER_ORG variable cannot be empty."; \
+		exit 1; \
+	fi; \
+	if [ -z "$(DOCKER_EMAIL)" ]; then \
+		echo "DOCKER_EMAIL variable cannot be empty."; \
+		exit 1; \
+	fi; \
+	if [ -z "$(DOCKER_USERNAME)" ]; then \
+		echo "DOCKER_USERNAME variable cannot be empty."; \
+		exit 1; \
+	fi; \
+	if [ -z "$(DOCKER_PASSWORD)" ]; then \
+		echo "DOCKER_PASSWORD variable cannot be empty."; \
+		exit 1; \
+	fi; \
+	if [ -z "$(DOCKER_REGISTRY)" ]; then \
+		echo "DOCKER_REGISTRY variable cannot be empty."; \
+		exit 1; \
+	fi; \
+	if [ ! -z "$(COMMANDS)" ]; then \
+		cp -r $(BUILD_PATH)/$(PROJECT)_linux_amd64 bin; \
+	fi; \
+	docker login -e "$(DOCKER_EMAIL)" -u "$(DOCKER_USERNAME)" -p "$(DOCKER_PASSWORD)" $(DOCKER_REGISTRY); \
+	for d in $(DOCKERFILES); do \
+		dockerfile=`echo $${d} | cut -d":" -f 1`; \
+		repository=`echo $${d} | cut -d":" -f 2`; \
+		docker build -q -t $(DOCKER_ORG)/$${repository} -f $(WORKDIR)/$$dockerfile .; \
+		docker tag $(DOCKER_ORG)/$${repository} $(DOCKER_ORG)/$${repository}:$(TAG); \
+		docker push $(DOCKER_ORG)/$${repository}:$(TAG); \
+		if [ $$? != 0 ]; then \
+			exit 1; \
+		fi; \
+	done; \
+
+packages:
+	@for os in $(PKG_OS); do \
+		for arch in $(PKG_ARCH); do \
+			cd $(WORKDIR); \
+			mkdir -p $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}; \
+			for cmd in $(COMMANDS); do \
+				if [ -d "$${cmd}" ]; then \
+					cd $${cmd}; \
+				fi; \
+				GOOS=$${os} GOARCH=$${arch} $(GOCMD) build -ldflags \
+				"-X main.version=$(TAG) -X main.build=$(BUILD) -X main.commit=$(COMMIT)" \
+				-o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $${PWD}`" .; \
+				cd $(WORKDIR); \
+			done; \
+			cd $(BUILD_PATH); \
+			tar -cvzf $(PROJECT)_$(TAG)_$${os}_$${arch}.tar.gz $(PROJECT)_$${os}_$${arch}/; \
+		done; \
+	done; \
+	cp -r $(BUILD_PATH)/$(PROJECT)_linux_amd64 $(WORKDIR)/bin; \
+
+post-run:
+	@for script in $(POSTRUN); do \
+		$(WORKDIR)/$${script}; \
+	done; \
+
+pre-run:
+	@for script in $(PRERUN); do \
+		$(WORKDIR)/$${script}; \
+	done; \
+
+test:
+	$(GOTEST) ./...
+
+test-coverage:
+	@cd $(WORKDIR); \
+	echo "" > $(COVERAGE_REPORT); \
+	for dir in `find . -name "*.go" | grep -o '.*/' | sort -u`; do \
+		$(GOTEST) $$dir -coverprofile=$(COVERAGE_PROFILE) -covermode=$(COVERAGE_MODE); \
+		if [ $$? != 0 ]; then \
+			exit 2; \
+		fi; \
+		if [ -f $(COVERAGE_PROFILE) ]; then \
+			cat $(COVERAGE_PROFILE) >> $(COVERAGE_REPORT); \
+			rm $(COVERAGE_PROFILE); \
+		fi; \
+	done; \
+	bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN);
+
+clean:
+	rm -rf $(BUILD_PATH)
+	$(GOCLEAN) .
