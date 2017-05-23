@@ -1,0 +1,41 @@
+# user defined variables
+LANGUAGES ?=
+
+# provided by docsrv
+DESTINATION_FOLDER ?=
+SHARED_FOLDER ?=
+BASE_URL ?=
+
+API_DOCS_FOLDER := "$(SHARED_FOLDER)/api"
+
+docs: docs-site docs-api
+
+docs-api:
+	@if [ -z "$(LANGUAGES)" ]; then \
+		echo 'There are no languages defined, not generating API docs.'; \
+		exit; \
+	fi; \
+	mkdir -p "$(API_DOCS_FOLDER)"; \
+	for lang in $(LANGUAGES); do \
+		LANG_TASK="docs-api-$$lang"; \
+		echo "Generating API docs for language '$$lang'..."; \
+		$(MAKE) -s -f $(lastword $(MAKEFILE_LIST)) $$LANG_TASK; \
+	done;
+
+docs-site:
+	@echo 'Unable to generate documentation site. Not implemented.';
+
+docs-api-go:
+	@echo 'Generated Go API docs. Nothing to do.';
+
+docs-api-python:
+	@echo 'Unable to generate API docs for Python. Not implemented.';
+
+docs-api-c:
+	@echo 'Unable to generate API docs for C. Not implemented.';
+
+docs-api-scala:
+	@echo 'Unable to generate API docs for Scala. Not implemented.';
+
+docs-api-java:
+	@echo 'Unable to generate API docs for Java. Not implemented.';
