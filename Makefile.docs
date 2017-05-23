@@ -17,7 +17,12 @@ CI_FOLDER := "$(SHARED_FOLDER)/ci"
 
 docs: docs-site docs-api
 
-docs-api:
+install-ci:
+	@if [ ! -d "$(CI_FOLDER)" ]; then \
+		git clone https://github.com/src-d/ci $(CI_FOLDER); \
+	fi;
+
+docs-api: install-ci
 	@if [ -z "$(LANGUAGES)" ]; then \
 		echo 'There are no languages defined, not generating API docs.'; \
 		exit; \
