@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,700');
+
+div.sphinxsidebar hr {
+  background: rgba(0, 0, 0, .1);
+}
+
+div.sphinxsidebarwrapper p.blurb {
+  margin-top: 1em;
+}
+
+form.search div {
+  display: inline-block;
+}
+
+div.sphinxsidebar #searchbox input[type="text"] {
+  width: 150px;
+}
+
+#searchbox {
+  margin-bottom: 1.5em;
+}

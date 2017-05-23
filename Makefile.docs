@@ -1,12 +1,19 @@
 # user defined variables
 LANGUAGES ?=
 
+# python specific variables
+PYTHON_MAIN_DIR ?= src
+
 # provided by docsrv
 DESTINATION_FOLDER ?=
 SHARED_FOLDER ?=
 BASE_URL ?=
+REPOSITORY_OWNER ?=
+REPOSITORY ?=
+VERSION_NAME ?=
 
-API_DOCS_FOLDER := "$(SHARED_FOLDER)/api"
+API_DOCS_FOLDER := "$(DESTINATION_FOLDER)/api"
+CI_FOLDER := "$(SHARED_FOLDER)/ci"
 
 docs: docs-site docs-api
 
@@ -19,7 +26,7 @@ docs-api:
 	for lang in $(LANGUAGES); do \
 		LANG_TASK="docs-api-$$lang"; \
 		echo "Generating API docs for language '$$lang'..."; \
-		$(MAKE) -s -f $(lastword $(MAKEFILE_LIST)) $$LANG_TASK; \
+		$(MAKE) -s $$LANG_TASK; \
 	done;
 
 docs-site:
@@ -29,7 +36,21 @@ docs-api-go:
 	@echo 'Generated Go API docs. Nothing to do.';
 
 docs-api-python:
-	@echo 'Unable to generate API docs for Python. Not implemented.';
+	@sphinx-apidoc --full --doc-author 'source{d}' \
+		--doc-version "$(VERSION_NAME)" --doc-release "$(VERSION_NAME)" \
+		--private --module-first --append-syspath --output-dir __api 
+		--doc-project "$(REPOSITORY)" "$(PYTHON_MAIN_DIR)" && \
+	cd __api && \
+	cat "$(CI_FOLDER)/docs/sphinx/conf.py" \
+		| sed "s/@PROJECT_NAME/$(REPOSITORY)/g" \
+		| sed "s/@USER_NAME/$(REPOSITORY_OWNER)/g" \
+		>> conf.py && \
+	cp "$(CI_FOLDER)/docs/sphinx/custom.css" _static && \
+	cp "$(CI_FOLDER)/docs/sphinx/logo-blue.svg" _static && \
+	make html && \
+	cd .. && \
+	mv __api/_build/html "$(API_DOCS_FOLDER)/python" && \
+	echo 'Generated API docs for Python.';
 
 docs-api-c:
 	@echo 'Unable to generate API docs for C. Not implemented.';
