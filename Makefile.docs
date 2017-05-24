@@ -88,5 +88,3 @@ docs-api-cpp:
 docs-api-scala:
 	@echo 'Unable to generate API docs for Scala. Not implemented.';
 
-docs-api-java:
-	@echo 'Unable to generate API docs for Java. Not implemented.';
