@@ -43,9 +43,9 @@ docs-api-go:
 docs-api-python:
 	@sphinx-apidoc --full --doc-author 'source{d}' \
 		--doc-version "$(VERSION_NAME)" --doc-release "$(VERSION_NAME)" \
-		--private --module-first --append-syspath --output-dir __api 
+		--private --module-first --append-syspath --output-dir __api_py \
 		--doc-project "$(REPOSITORY)" "$(PYTHON_MAIN_DIR)" && \
-	cd __api && \
+	cd __api_py && \
 	cat "$(CI_FOLDER)/docs/sphinx/conf.py" \
 		| sed "s/@PROJECT_NAME/$(REPOSITORY)/g" \
 		| sed "s/@USER_NAME/$(REPOSITORY_OWNER)/g" \
@@ -54,11 +54,36 @@ docs-api-python:
 	cp "$(CI_FOLDER)/docs/sphinx/logo-blue.svg" _static && \
 	make html && \
 	cd .. && \
-	mv __api/_build/html "$(API_DOCS_FOLDER)/python" && \
+	mv __api_py/_build/html "$(API_DOCS_FOLDER)/python" && \
 	echo 'Generated API docs for Python.';
 
-docs-api-c:
-	@echo 'Unable to generate API docs for C. Not implemented.';
+docs-api-cpp:
+	@sphinx-apidoc --full --doc-author 'source{d}' \
+		--doc-version "$(VERSION_NAME)" --doc-release "$(VERSION_NAME)" \
+		--private --module-first --append-syspath --output-dir __api_cpp \
+		--doc-project "$(REPOSITORY)" . && \
+	cat "$(CI_FOLDER)/docs/doxygen/Doxyfile" \
+		| sed "s/@PROJECT/$(REPOSITORY)/g" \
+		> Doxyfile && \
+	doxygen Doxyfile && \
+	cd __api_cpp && \
+	rm -rf *.rst && \
+	cat "$(CI_FOLDER)/docs/sphinx/conf.py" \
+		| sed "s/@PROJECT_NAME/$(REPOSITORY)/g" \
+		| sed "s/@USER_NAME/$(REPOSITORY_OWNER)/g" \
+		>> conf.py && \
+	cat "$(CI_FOLDER)/docs/sphinx/breathe_conf.py" \
+		| sed "s/@PROJECT_NAME/$(REPOSITORY)/g" \
+		>> conf.py && \
+	cat "$(CI_FOLDER)/docs/sphinx/breathe_index.rst" \
+		| sed "s/@PROJECT_NAME/$(REPOSITORY)/g" \
+		> index.rst && \
+	cp "$(CI_FOLDER)/docs/sphinx/custom.css" _static && \
+	cp "$(CI_FOLDER)/docs/sphinx/logo-blue.svg" _static && \
+	make html && \
+	cd .. && \
+	mv __api_cpp/_build/html "$(API_DOCS_FOLDER)/cpp" && \
+	echo 'Generated API docs for C++.';
 
 docs-api-scala:
 	@echo 'Unable to generate API docs for Scala. Not implemented.';
