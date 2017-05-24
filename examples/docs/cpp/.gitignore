@@ -1,0 +1,6 @@
+.shared
+output
+__api_py
+__api_cpp
+*.pyc
+Makefile.docs
