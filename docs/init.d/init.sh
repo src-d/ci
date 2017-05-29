@@ -28,14 +28,18 @@ mv hugo /bin && \
 cd ~ && rm -rf /tmp/hugo;
 
 # clone ci shared repo
-echo 'Cloning CI shared repo...';
-git clone https://github.com/src-d/ci.git $CI_FOLDER;
+if [ ! -d "$CI_FOLDER" ]; then
+        echo 'Cloning CI shared repo...';
+        git clone https://github.com/src-d/ci.git $CI_FOLDER;
+fi;
 
 # install landing and export commons
-echo 'Installing landing and exporting commons...';
-git clone https://github.com/src-d/landing.git $LANDING_FOLDER && \
+if [ ! -d "$LANDING_FOLDER" ]; then
+        echo 'Installing landing and exporting commons...';
+        git clone https://github.com/src-d/landing.git $LANDING_FOLDER;
+fi;
 cd $LANDING_FOLDER && \
-make export-landing-commons;
+make export-landing-commons target=landing-common.tar;
 
 # build error-pages hugo
 echo 'Building error pages...';
