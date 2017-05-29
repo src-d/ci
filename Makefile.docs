@@ -1,0 +1,90 @@
+# user defined variables
+LANGUAGES ?=
+
+# python specific variables
+PYTHON_MAIN_DIR ?= src
+
+# provided by docsrv
+DESTINATION_FOLDER ?=
+SHARED_FOLDER ?=
+BASE_URL ?=
+REPOSITORY_OWNER ?=
+REPOSITORY ?=
+VERSION_NAME ?=
+
+API_DOCS_FOLDER := "$(DESTINATION_FOLDER)/api"
+CI_FOLDER := "$(SHARED_FOLDER)/ci"
+
+docs: docs-site docs-api
+
+install-ci:
+	@if [ ! -d "$(CI_FOLDER)" ]; then \
+		git clone https://github.com/src-d/ci $(CI_FOLDER); \
+	fi;
+
+docs-api: install-ci
+	@if [ -z "$(LANGUAGES)" ]; then \
+		echo 'There are no languages defined, not generating API docs.'; \
+		exit; \
+	fi; \
+	mkdir -p "$(API_DOCS_FOLDER)"; \
+	for lang in $(LANGUAGES); do \
+		LANG_TASK="docs-api-$$lang"; \
+		echo "Generating API docs for language '$$lang'..."; \
+		$(MAKE) -s $$LANG_TASK; \
+	done;
+
+docs-site:
+	@echo 'Unable to generate documentation site. Not implemented.';
+
+docs-api-go:
+	@echo 'Generated Go API docs. Nothing to do.';
+
+docs-api-python:
+	@sphinx-apidoc --full --doc-author 'source{d}' \
+		--doc-version "$(VERSION_NAME)" --doc-release "$(VERSION_NAME)" \
+		--private --module-first --append-syspath --output-dir __api_py \
+		--doc-project "$(REPOSITORY)" "$(PYTHON_MAIN_DIR)" && \
+	cd __api_py && \
+	cat "$(CI_FOLDER)/docs/sphinx/conf.py" \
+		| sed "s/@PROJECT_NAME/$(REPOSITORY)/g" \
+		| sed "s/@USER_NAME/$(REPOSITORY_OWNER)/g" \
+		>> conf.py && \
+	cp "$(CI_FOLDER)/docs/sphinx/custom.css" _static && \
+	cp "$(CI_FOLDER)/docs/sphinx/logo-blue.svg" _static && \
+	make html && \
+	cd .. && \
+	mv __api_py/_build/html "$(API_DOCS_FOLDER)/python" && \
+	echo 'Generated API docs for Python.';
+
+docs-api-cpp:
+	@sphinx-apidoc --full --doc-author 'source{d}' \
+		--doc-version "$(VERSION_NAME)" --doc-release "$(VERSION_NAME)" \
+		--private --module-first --append-syspath --output-dir __api_cpp \
+		--doc-project "$(REPOSITORY)" . && \
+	cat "$(CI_FOLDER)/docs/doxygen/Doxyfile" \
+		| sed "s/@PROJECT/$(REPOSITORY)/g" \
+		> Doxyfile && \
+	doxygen Doxyfile && \
+	cd __api_cpp && \
+	rm -rf *.rst && \
+	cat "$(CI_FOLDER)/docs/sphinx/conf.py" \
+		| sed "s/@PROJECT_NAME/$(REPOSITORY)/g" \
+		| sed "s/@USER_NAME/$(REPOSITORY_OWNER)/g" \
+		>> conf.py && \
+	cat "$(CI_FOLDER)/docs/sphinx/breathe_conf.py" \
+		| sed "s/@PROJECT_NAME/$(REPOSITORY)/g" \
+		>> conf.py && \
+	cat "$(CI_FOLDER)/docs/sphinx/breathe_index.rst" \
+		| sed "s/@PROJECT_NAME/$(REPOSITORY)/g" \
+		> index.rst && \
+	cp "$(CI_FOLDER)/docs/sphinx/custom.css" _static && \
+	cp "$(CI_FOLDER)/docs/sphinx/logo-blue.svg" _static && \
+	make html && \
+	cd .. && \
+	mv __api_cpp/_build/html "$(API_DOCS_FOLDER)/cpp" && \
+	echo 'Generated API docs for C++.';
+
+docs-api-scala:
+	@echo 'Unable to generate API docs for Scala. Not implemented.';
+
