@@ -15,6 +15,10 @@ pip install breathe --no-cache-dir;
 echo 'Installing doxygen...';
 apk add doxygen;
 
+# install nodejs and npm
+echo 'Installing node & npm...';
+apk add nodejs;
+
 # install hugo
 echo 'Installing hugo...';
 apk add curl && \
@@ -33,11 +37,17 @@ if [ ! -d "$CI_FOLDER" ]; then
         git clone https://github.com/src-d/ci.git $CI_FOLDER;
 fi;
 
+# cache node_modules installation 
+cd "$CI_FOLDER/hugo-template" && \
+npm install;
+
 # install landing and export commons
 if [ ! -d "$LANDING_FOLDER" ]; then
         echo 'Installing landing and exporting commons...';
         git clone https://github.com/src-d/landing.git $LANDING_FOLDER;
 fi;
+
+# export landing commons
 cd $LANDING_FOLDER && \
 make export-landing-commons target=landing-common.tar;
 
