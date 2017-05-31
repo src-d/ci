@@ -1,0 +1,15 @@
+{{ $baseDirectory := "hugo/content" }}
+
+{{ $fileParts := ( split .filename "/" ) }}
+{{ $pathPartsLength := ( sub ( len $fileParts ) 1 ) }}
+{{ $filePath := delimit ( first $pathPartsLength $fileParts ) "/" }}
+{{ $fileName := index ( last 1 $fileParts ) 0 }}
+
+{{ $directory := ( printf "%s/%s" $baseDirectory $filePath ) }}
+{{ $raws := ( readDir $directory ) }}
+
+{{ if ( where $raws "Name" $fileName ) }}
+    <li>
+        <a href="{{.linkUrl}}" {{ if eq .URL .linkUrl }}class="active"{{end}}>{{.linkText}}</a>
+    </li>
+{{ end }}

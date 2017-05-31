@@ -1,0 +1,19 @@
+{{ $headerCtx := dict "Params" (dict "topbar" "opaque") "Site" .Site }}
+
+{{ partial "head.html" . }}
+
+<body>
+    {{ partial "header.html" $headerCtx }}
+
+    <div class="project-container">
+        {{ partial "aside.html" . }}
+
+        <div class="content">
+            {{ default "<h1>404 not found :(</h1>" .Content }}
+        </div>
+    </div>
+
+    {{ partial "footer.html" . }}
+</body>
+
+</html>
