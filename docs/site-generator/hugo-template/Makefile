@@ -46,7 +46,7 @@ hugo-dependencies:
 		$(untargz) $(hugo_zip_name); \
 	fi;
 
-export_filename := $(shell pwd)/landing-common.tar
+export_filename := $(pwd)/landing-common.tar
 file_list_name := .list.gitignore
 # Imports common stuff
 import-commons:
@@ -55,10 +55,8 @@ import-commons:
 		file_list_name=$(file_list_name)
 	$(untar) $(export_filename)
 	$(remove) $(export_filename)
-	$(rename) $(file_list_name) .gitignore
 
 # Prepares npm and run webpack to compile the assets
 npm-dependencies:
 	$(npm) install
 	$(npm) run build
-	$(remove) node_modules
