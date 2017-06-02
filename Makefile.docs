@@ -14,6 +14,7 @@ VERSION_NAME ?=
 
 API_DOCS_FOLDER := "$(DESTINATION_FOLDER)/api"
 CI_FOLDER := "$(SHARED_FOLDER)/ci"
+SITE_GENERATOR := "$(CI_FOLDER)/docs/site-generator"
 
 docs: docs-site docs-api
 
@@ -35,7 +36,7 @@ docs-api: install-ci
 	done;
 
 docs-site:
-	@echo 'Unable to generate documentation site. Not implemented.';
+	$(MAKE) -C $(SITE_GENERATOR) docs OUTPUT=$(DESTINATION_FOLDER) SHARED=$(SHARED_FOLDER) BASEURL=$(BASE_URL) OWNER=$(REPOSITORY_OWNER) REPOSITORY=$(REPOSITORY) VERSION=$(VERSION_NAME) LANGUAGES="$(LANGUAGES)" SOURCES=$(shell pwd)
 
 docs-api-go:
 	@echo 'Generated Go API docs. Nothing to do.';

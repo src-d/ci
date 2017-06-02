@@ -1,0 +1,162 @@
+.project-container {
+    $margin: 20px;
+    $asideWidth: 260px;
+    display: flex;
+    margin-top: $topbarHeight;
+
+    & > {
+        .menu {
+            flex-basis: $asideWidth;
+            flex-grow: 0;
+            flex-shrink: 0;
+            background-color: $bgLightBlue;
+            border-right: 1px solid $lineColorBorderAlt;
+            padding:  $margin;
+
+            & > .container {
+                h1, h4 {
+                    text-align: left;
+                }
+
+                h4 {
+                    @include textSmall;
+                    margin-bottom: 20px;
+                }
+
+                li {
+                    line-height: 35px;
+
+                    a {
+                        @include linkStyle(true, emphasis);
+                    }
+                }
+            }
+        }
+
+        .content {
+            min-height: 300px;
+            flex-grow: 1;
+            flex-shrink: 1;
+            padding: $margin (2 * $margin);
+            overflow: hidden;
+
+            & > {
+                h1, h2, h3, h4, h5, h6 {
+                    text-align: left;
+                }
+
+                h1 {
+                    margin-bottom: 20px;
+
+                    & > a {
+                        float: right;
+                        margin-left: 8px;
+                    }
+                }
+
+                h2 {
+                    margin-top: 30px;
+                }
+
+                h3 {
+                    margin-top: 20px;
+                }
+
+                p {
+                    & + p {
+                        margin-top: 10px;
+                    }
+
+                    & > a {
+                        @include linkStyle(true, emphasis);
+
+                        &:after {
+                            margin-left: 3px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.projectCode {
+    position: relative;
+    padding: .2em;
+    background: $bgLightBlue;
+    border: 1px solid darken($bgLightBlue, 5%);
+    border-radius: $borderRadius;
+    margin: 20px 0 40px;
+
+    .projectCodeHeader {
+        $headerHeight: 22px;
+        $dotSize: 12px;
+        $dotMargin: 10px;
+        position: relative;
+        margin: 0 .4em .2em;
+
+        h3 {
+            font-family: $fontCode;
+            font-size: $headerHeight / 1.5;
+            line-height: $headerHeight;
+            min-height: $headerHeight;
+        }
+
+        &:before,
+        &:after,
+        h3:before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: $dotSize;
+            height: $dotSize;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        &:before {
+            left: 0;
+            background-color: $codeWindowRed;
+            border: 1px solid darken($codeWindowRed, 9%);
+        }
+
+        &:after {
+            left: $dotSize + $dotMargin;
+            background-color: $codeWindowGreen;
+            border: 1px solid darken($codeWindowGreen, 7%);
+        }
+
+        h3:before {
+            left: 2 * $dotSize + 2 * $dotMargin;
+            background-color: $codeWindowYellow;
+            border: 1px solid darken($codeWindowYellow, 9%);
+        }
+    }
+
+    pre {
+        line-height: 0;
+        display: block
+    }
+
+    code {
+        padding: 1em;
+        font-size: .8em;
+        line-height: 1.4em;
+        font-family: 'Hack', monospace;
+        border-radius: $borderRadius;
+        overflow-y: auto;
+        display: block;
+        background: $bgCodeWindow;
+        color: $textColorLight;
+    }
+}
+
+footer.footer {
+    border-top: 1px solid $lineColorBlueLight;
+
+    .mainContainer {
+        border-top: 0;
+    }
+}

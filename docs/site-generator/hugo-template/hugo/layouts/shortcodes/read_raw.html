@@ -1,0 +1,21 @@
+{{ $baseDirectory := "hugo/content" }}
+
+{{ $errorMsg := (.Get 1) }}
+
+{{ $fileParts := ( split (.Get 0) "/" ) }}
+{{ $pathPartsLength := ( sub ( len $fileParts ) 1 ) }}
+{{ $filePath := delimit ( first $pathPartsLength $fileParts ) "/" }}
+{{ $fileName := index ( last 1 $fileParts ) 0 }}
+
+{{ $directory := ( printf "%s/%s" $baseDirectory $filePath ) }}
+{{ $raws := ( readDir $directory ) }}
+
+{{ $project := $.Site.Data.project }}
+
+{{ if (where $raws "Name" $fileName) }}
+    {{ readFile ( printf "%s/%s" $directory  $fileName ) | markdownify }}
+{{ else }}
+    <div class="error">
+        {{ printf "There is no %s available for this version of %s" $errorMsg $project.name}}
+    </div>
+{{ end }}

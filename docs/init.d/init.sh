@@ -1,4 +1,3 @@
-HUGO_URL=https://github.com/spf13/hugo/releases/download/v0.20.7/hugo_0.20.7_Linux-64bit.tar.gz;
 SHARED_FOLDER=/etc/shared
 LANDING_FOLDER="$SHARED_FOLDER/landing"
 CI_FOLDER="$SHARED_FOLDER/ci"
@@ -19,55 +18,27 @@ apk add doxygen;
 echo 'Installing node & npm...';
 apk add nodejs;
 
-# install hugo
-echo 'Installing hugo...';
-apk add curl && \
-apk add tar && \
-#rm -rf /var/cache/apk &&
-mkdir -p /tmp/hugo && \
-curl -L -o /tmp/hugo/hugo.tar.gz $HUGO_URL && \
-cd /tmp/hugo && \
-tar -zxf hugo.tar.gz && \
-mv hugo /bin && \
-cd ~ && rm -rf /tmp/hugo;
+# install gettext
+# gettext is installed only because of the envsubst
+echo 'Installing gettext...';
+apk add gettext;
 
 # clone ci shared repo
 if [ ! -d "$CI_FOLDER" ]; then
-        echo 'Cloning CI shared repo...';
-        git clone https://github.com/src-d/ci.git $CI_FOLDER;
+    echo 'Cloning CI shared repo...';
+    git clone https://github.com/src-d/ci.git $CI_FOLDER;
 fi;
-
-# cache node_modules installation 
-cd "$CI_FOLDER/hugo-template" && \
-npm install;
 
 # install landing and export commons
 if [ ! -d "$LANDING_FOLDER" ]; then
-        echo 'Installing landing and exporting commons...';
-        git clone https://github.com/src-d/landing.git $LANDING_FOLDER;
+    echo 'Installing landing...';
+    git clone https://github.com/src-d/landing.git $LANDING_FOLDER;
 fi;
 
-# export landing commons
-cd $LANDING_FOLDER && \
-make export-landing-commons target=landing-common.tar;
+# prepare all hugo template assets
+cd "$CI_FOLDER/docs/site-generator/hugo-template";
+make dependencies LANDING_PATH="$LANDING_FOLDER";
 
-# build error-pages hugo
-echo 'Building error pages...';
-mkdir -p /tmp/error-pages-hugo-build && \
-cd /tmp/error-pages-hugo-build && \
-cp "$LANDING_FOLDER/landing-common.tar" . && \
-tar -xf landing-common.tar && \
-mkdir -p hugo/content && \
-cp "$CI_FOLDER/docs/error-pages/404.md" hugo/content && \
-cp "$CI_FOLDER/docs/error-pages/500.md" hugo/content && \
-mkdir -p hugo/layouts/_default && \
-cp "$CI_FOLDER/docs/error-pages/tpl.html" hugo/layouts/_default/single.html;
-
-# make and install error-pages
-echo 'Installing error-pages...';
-hugo --config hugo.config.yaml && \
-mv public/404/index.html public/404.html && \
-mv public/500/index.html public/500.html && \
-rm -rf public/404 public/500 && \
-cp -R public/* $ERROR_PAGES_FOLDER;
-cd ~ && rm -rf /tmp/error-pages-hugo-build;
+# prepare 404 and 500 error pages
+cd "$CI_FOLDER/docs/site-generator";
+make error-site OUTPUT="$ERROR_PAGES_FOLDER" SHARED="$SHARED_FOLDER" SOURCES="$ERROR_PAGES_FOLDER"
