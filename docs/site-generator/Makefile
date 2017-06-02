@@ -14,14 +14,14 @@ export LANGUAGES ?=
 # Variables
 landing_path := $(SHARED)/landing
 site_sources_path := $(SOURCES)/.doc-site-sources
-hugo_template_path = ./hugo-template
-makefile_templates_paths = ./makefile-templates
+hugo_template_path := ./hugo-template
+makefile_templates_paths := ./makefile-templates
 
 # Tools
-copy = cp -R
-remove = rm -rf
-move = mv -f
-mkdir = mkdir -p
+copy := cp -R
+remove := rm -rf
+move := mv -f
+mkdir := mkdir -p
 
 ## Lists all recipes
 list:
@@ -39,8 +39,8 @@ copy-sources:
 	$(remove) $(site_sources_path)
 	$(copy) $(hugo_template_path) $(site_sources_path)
 
-hugo_content_raw_path = $(site_sources_path)/hugo/content/raw
-project_yml_path = $(site_sources_path)/hugo/data
+hugo_content_raw_path := $(site_sources_path)/hugo/content/raw
+project_yml_path := $(site_sources_path)/hugo/data
 # Extracts the documentation contents from the project repository
 extract-repo-documentation:
 	$(copy) $(SOURCES)/README.md $(hugo_content_raw_path)
@@ -61,7 +61,7 @@ extract-repo-documentation:
 
 	@envsubst < $(makefile_templates_paths)/project.yml > $(project_yml_path)/project.yml
 
-generated_site_path=$(site_sources_path)/public
+generated_site_path := $(site_sources_path)/public
 # Builds the documentation-site
 site-build:
 	$(MAKE) -C $(site_sources_path) hugo-build DESTINATION=$(generated_site_path)

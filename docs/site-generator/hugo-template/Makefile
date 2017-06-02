@@ -46,8 +46,8 @@ hugo-dependencies:
 		$(untargz) $(hugo_zip_name); \
 	fi;
 
-export_filename = $(shell pwd)/landing-common.tar
-file_list_name = .list.gitignore
+export_filename := $(shell pwd)/landing-common.tar
+file_list_name := .list.gitignore
 # Imports common stuff
 import-commons:
 	$(MAKE) -C $(LANDING_PATH) export-landing-commons \
