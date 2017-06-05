@@ -1,5 +1,1 @@
-hugo-template/.hugo
-hugo-template/.gitignore
-hugo-template/node_modules
-hugo-template/static/css
-hugo-template/static/js
+.boilerplate

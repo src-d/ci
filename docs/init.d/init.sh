@@ -2,6 +2,7 @@ SHARED_FOLDER=/etc/shared
 LANDING_FOLDER="$SHARED_FOLDER/landing"
 CI_FOLDER="$SHARED_FOLDER/ci"
 ERROR_PAGES_FOLDER=/var/www/public/errors
+SITE_GENERATOR="$CI_FOLDER/docs/site-generator"
 
 # install python, sphinx and breathe
 echo 'Installing python, sphinx and breathe...';
@@ -27,18 +28,20 @@ apk add gettext;
 if [ ! -d "$CI_FOLDER" ]; then
     echo 'Cloning CI shared repo...';
     git clone https://github.com/src-d/ci.git $CI_FOLDER;
+else
+    echo "Skiping CI cloning; already in ${CI_FOLDER}";
 fi;
 
 # install landing and export commons
 if [ ! -d "$LANDING_FOLDER" ]; then
     echo 'Installing landing...';
     git clone https://github.com/src-d/landing.git $LANDING_FOLDER;
+else
+    echo "Skiping Landing cloning; already in ${LANDING_FOLDER}";
 fi;
 
 # prepare all hugo template assets
-cd "$CI_FOLDER/docs/site-generator/hugo-template";
-make dependencies LANDING_PATH="$LANDING_FOLDER";
+make -C $SITE_GENERATOR boilerplate;
 
 # prepare 404 and 500 error pages
-cd "$CI_FOLDER/docs/site-generator";
-make error-site OUTPUT="$ERROR_PAGES_FOLDER" SHARED="$SHARED_FOLDER" SOURCES="$ERROR_PAGES_FOLDER"
+make -C $SITE_GENERATOR error-site OUTPUT="$ERROR_PAGES_FOLDER" SHARED="$SHARED_FOLDER" SOURCES="$ERROR_PAGES_FOLDER"
