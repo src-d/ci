@@ -1,0 +1,65 @@
+# Default shell
+SHELL := /bin/sh
+
+# Global CI. Do not edit
+SHARED_PATH ?= $(shell pwd)/.shared
+CI_PATH ?= $(shell pwd)
+
+# Conf vars
+GITHUB_API_KEY ?=
+LOGS_PATH ?= $(SHARED_PATH)/logs
+LANDING_PATH ?= $(SHARED_PATH)/landing
+INIT_PATH ?= $(CI_PATH)/docs/init.d
+CONF_PATH ?= $(CI_PATH)/docs/conf.d
+
+#vars
+docker_container_name = docsrv-instance
+docker_image_name = docsrv-image
+
+#tools
+mkdir := mkdir -p
+remove := rm -rf
+docker_run := docker run --detach
+docker_build := docker build -t
+docker_logs := docker logs --follow
+docker_remove := docker rm -f
+docker_ps := docker ps -a
+grep := grep
+tail := tail -f
+touch := touch
+
+develop: build drop-running-instances
+	@$(docker_build) $(docker_image_name) .
+	@$(mkdir) $(LOGS_PATH) $(SHARED_PATH)
+	$(docker_run) \
+		--name $(docker_container_name) \
+		--publish 9090:9090 \
+		--env GITHUB_API_KEY="$(GITHUB_API_KEY)" \
+		--env DEBUG_LOG=true \
+		--volume $(LOGS_PATH):/var/log/docsrv \
+		--volume $(SHARED_PATH):/etc/shared \
+		--volume $(INIT_PATH):/etc/docsrv/init.d \
+		--volume $(CONF_PATH):/etc/docsrv/conf.d \
+		--volume $(LANDING_PATH):/etc/shared/landing \
+		--volume $(CI_PATH):/etc/shared/ci \
+		$(docker_image_name);
+
+drop-running-instances:
+	@running=`$(docker_ps) -f name=$(docker_container_name) | $(grep) $(docker_container_name)`; \
+	if [ -n "$$running" ]; then \
+		echo "[INFO] Removing already existent container '$(docker_container_name)'."; \
+		$(docker_remove) $(docker_container_name); \
+	fi;
+	@$(remove) logs/*
+
+view-docker-logs:
+	@$(docker_logs) $(docker_container_name);
+
+view-supervisor-logs:
+	@if [ ! -r "$(LOGS_PATH)/caddy.log" ]; then \
+		$(touch) $(LOGS_PATH)/caddy.log; \
+	fi;
+	@if [ ! -r "$(LOGS_PATH)/docsrv.log" ]; then \
+		$(touch) $(LOGS_PATH)/docsrv.log; \
+	fi;
+	@$(tail) $(LOGS_PATH)/*
