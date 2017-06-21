@@ -89,7 +89,7 @@ docker-push:
 	for d in $(DOCKERFILES); do \
 		dockerfile=`echo $${d} | cut -d":" -f 1`; \
 		repository=`echo $${d} | cut -d":" -f 2`; \
-		docker build -q -t $(DOCKER_ORG)/$${repository} -f $(WORKDIR)/$$dockerfile .; \
+		docker build -t $(DOCKER_ORG)/$${repository} -f $(WORKDIR)/$$dockerfile .; \
 		docker tag $(DOCKER_ORG)/$${repository} $(DOCKER_ORG)/$${repository}:$(TAG); \
 		docker push $(DOCKER_ORG)/$${repository}:$(TAG); \
 		if [ $$? != 0 ]; then \
