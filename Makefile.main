@@ -89,12 +89,14 @@ docker-push:
 	for d in $(DOCKERFILES); do \
 		dockerfile=`echo $${d} | cut -d":" -f 1`; \
 		repository=`echo $${d} | cut -d":" -f 2`; \
-		docker build -t $(DOCKER_ORG)/$${repository} -f $(WORKDIR)/$$dockerfile .; \
-		docker tag $(DOCKER_ORG)/$${repository} $(DOCKER_ORG)/$${repository}:$(TAG); \
+		echo "Building dockerfile $$dockerfile for repository $$repository."; \
+		docker build -t $(DOCKER_ORG)/$${repository}:$(TAG) -f $(WORKDIR)/$$dockerfile . && \
 		docker push $(DOCKER_ORG)/$${repository}:$(TAG); \
 		if [ $$? != 0 ]; then \
+			echo "Something went wrong pushing the image."; \
 			exit 1; \
 		fi; \
+		echo "Successfully uploaded image."; \
 	done; \
 
 packages:
