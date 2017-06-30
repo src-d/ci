@@ -1,0 +1,11 @@
+hash: f6bddc3d90d52b6061ff53dc928c3bec8144b537145cd597731d54b5220c28f5
+updated: 2017-06-30T15:49:19.761648304+02:00
+imports:
+- name: github.com/src-d/ci
+  version: a30c0a3cd198346f83574b4be20beaa07f64be15
+  subpackages:
+  - examples/ci
+- name: my.vendor/lib
+  version: bfd5150e4e41705ded2129ec33379de1cb90b513
+  repo: https://github.com/pkg/errors
+testImports: []

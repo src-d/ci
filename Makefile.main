@@ -53,7 +53,17 @@ COVERAGE_REPORT = coverage.txt
 COVERAGE_PROFILE = profile.out
 COVERAGE_MODE = atomic
 
-PACKAGES = $(shell go list)
+# Glide
+GLIDE_LOCK = glide.lock
+ifneq ("$(wildcard $(GLIDE_LOCK))","")
+VENDOR_PATH = $(WORKDIR)/vendor
+GLIDE = glide
+DEPENDENCIES += github.com/Masterminds/glide
+else
+VENDOR_PATH =
+endif
+
+PACKAGES = $(shell go list | grep -v '/vendor/')
 
 # Rules
 
@@ -155,5 +165,5 @@ test-coverage:
 	bash <(curl -s https://codecov.io/bash) $${args}; \
 
 clean:
-	rm -rf $(BUILD_PATH)
+	rm -rf $(BUILD_PATH) $(VENDOR_PATH)
 	$(GOCLEAN) .
