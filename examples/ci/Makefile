@@ -1,7 +1,7 @@
 # Package configuration
-PROJECT = foo
-COMMANDS = foo bar
-CODECOV_TOKEN = your codecov token
+PROJECT = ci
+COMMANDS = cmd/test
+#CODECOV_TOKEN = your codecov token
 
 # Including ci Makefile
 MAKEFILE = Makefile.main

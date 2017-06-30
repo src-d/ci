@@ -145,7 +145,10 @@ test-coverage:
 			rm $(COVERAGE_PROFILE); \
 		fi; \
 	done; \
-	bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN);
+	if [[ ! -z "$(CODECOV_TOKEN)" ]] ; then \
+		args="-t $(CODECOV_TOKEN)"; \
+	fi; \
+	bash <(curl -s https://codecov.io/bash) $${args}; \
 
 clean:
 	rm -rf $(BUILD_PATH)
