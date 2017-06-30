@@ -53,18 +53,22 @@ COVERAGE_REPORT = coverage.txt
 COVERAGE_PROFILE = profile.out
 COVERAGE_MODE = atomic
 
+PACKAGES = $(shell go list)
+
 # Rules
-dependencies:
-	@for i in $(DEPENDENCIES); do $(GOGET) $$i; done; \
-	retries=0; \
-	while [[ $$retries < 3 ]]; do \
-		cd $(WORKDIR) && $(GOGET) ./...; \
-		if [ $$? == 0 ]; then \
-			break; \
-		fi; \
-		sleep 2; \
-		((retries++)); \
-	done;
+
+.PHONY: $(DEPENDENCIES) $(PACKAGES) dependencies docker-push packages test test-coverage pre-run post-run clean
+
+$(DEPENDENCIES):
+	$(GOGET) $@/...
+
+$(VENDOR_PATH): $(GLIDE_LOCK)
+	$(GLIDE) install
+
+$(PACKAGES): $(VENDOR_PATH)
+	$(GOGET) $@
+
+dependencies: $(DEPENDENCIES) $(VENDOR_PATH) $(PACKAGES)
 
 docker-push:
 	@if [ "$(BRANCH)" == "master" ]; then \
@@ -130,12 +134,12 @@ pre-run:
 	done; \
 
 test:
-	$(GOTEST) ./...
+	$(GOTEST) $(PACKAGES)
 
 test-coverage:
 	@cd $(WORKDIR); \
 	echo "" > $(COVERAGE_REPORT); \
-	for dir in `find . -name "*.go" | grep -o '.*/' | sort -u`; do \
+	for dir in $(PACKAGES); do \
 		$(GOTEST) $$dir -coverprofile=$(COVERAGE_PROFILE) -covermode=$(COVERAGE_MODE); \
 		if [ $$? != 0 ]; then \
 			exit 2; \
