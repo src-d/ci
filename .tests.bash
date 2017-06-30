@@ -8,6 +8,8 @@ for example in ${EXAMPLES} ; do
 	cp Makefile.main ${example}/Makefile.main
 	pushd $example &> /dev/null
 
+	make dependencies
+
 	make test
 
 	make test-coverage
