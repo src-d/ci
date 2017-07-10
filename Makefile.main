@@ -13,7 +13,7 @@ POSTRUN ?=
 DOCKER_ORG ?=
 DOCKER_USERNAME ?=
 DOCKER_PASSWORD ?=
-DOCKER_REGISTRY ?=
+DOCKER_REGISTRY ?= docker.io
 
 # Checking mandatory variables
 ifndef PROJECT
@@ -104,8 +104,8 @@ docker-push:
 		dockerfile=`echo $${d} | cut -d":" -f 1`; \
 		repository=`echo $${d} | cut -d":" -f 2`; \
 		echo "Building dockerfile $$dockerfile for repository $$repository."; \
-		docker build -t $(DOCKER_ORG)/$${repository}:$(TAG) -f $(WORKDIR)/$$dockerfile . && \
-		docker push $(DOCKER_ORG)/$${repository}:$(TAG); \
+		docker build -t $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(TAG) -f $(WORKDIR)/$$dockerfile . && \
+		docker push $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(TAG); \
 		if [ $$? != 0 ]; then \
 			echo "Something went wrong pushing the image."; \
 			exit 1; \
