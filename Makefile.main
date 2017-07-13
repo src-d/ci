@@ -63,7 +63,7 @@ else
 VENDOR_PATH =
 endif
 
-PACKAGES = $(shell go list | grep -v '/vendor/')
+PACKAGES = $(shell go list ./... | grep -v '/vendor/')
 
 # Rules
 
