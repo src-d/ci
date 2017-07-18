@@ -8,6 +8,7 @@ DEPENDENCIES ?=
 DOCKERFILES ?= Dockerfile:$(PROJECT)
 PRERUN ?=
 POSTRUN ?=
+RACE_ENABLED ?=
 
 # Docker configuration
 DOCKER_ORG ?=
@@ -150,7 +151,11 @@ test-coverage:
 	@cd $(WORKDIR); \
 	echo "" > $(COVERAGE_REPORT); \
 	for dir in $(PACKAGES); do \
-		$(GOTEST) $$dir -coverprofile=$(COVERAGE_PROFILE) -covermode=$(COVERAGE_MODE); \
+		if [ -z $(RACE_ENABLED) ]; then \
+			$(GOTEST) $$dir -coverprofile=$(COVERAGE_PROFILE) -covermode=$(COVERAGE_MODE); \
+		else \
+			$(GOTEST) $$dir -race -coverprofile=$(COVERAGE_PROFILE) -covermode=$(COVERAGE_MODE); \
+		fi; \
 		if [ $$? != 0 ]; then \
 			exit 2; \
 		fi; \
