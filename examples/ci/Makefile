@@ -12,7 +12,6 @@ CI_FOLDER = .ci
 # DOCKERFILES = Dockerfile_filename1:repositoryname1 Dockerfile_filename2:repositoryname2 ...
 
 $(MAKEFILE):
-	@git clone --quiet $(CI_REPOSITORY) $(CI_FOLDER); \
-	cp $(CI_FOLDER)/$(MAKEFILE) .;
+	wget https://raw.githubusercontent.com/src-d/ci/master/Makefile.main
 
 -include $(MAKEFILE)
