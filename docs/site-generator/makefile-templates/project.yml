@@ -1,8 +1,0 @@
-name: ${REPOSITORY}
-version: ${VERSION}
-githubName: ${OWNER}/${REPOSITORY}
-repoUrl: https://github.com/${OWNER}/${REPOSITORY}
-repoVersionUrl: https://github.com/${OWNER}/${REPOSITORY}/releases/tag/${VERSION}
-issuesUrl: https://github.com/${OWNER}/${REPOSITORY}/issues
-baseURL: ${BASEURL}
-languages: ${LANGUAGES}
