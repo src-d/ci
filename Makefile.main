@@ -48,6 +48,7 @@ GOCLEAN = $(GOCMD) clean
 GOINSTALL = $(GOCMD) install -v
 GOGET = $(GOCMD) get -v -t
 GOTEST = $(GOCMD) test -v
+CGO_ENABLED = ?= 0
 
 # Coverage
 COVERAGE_REPORT = coverage.txt
@@ -123,7 +124,7 @@ packages:
 				if [ -d "$${cmd}" ]; then \
 					cd $${cmd}; \
 				fi; \
-				CGO_ENABLED=0 GOOS=$${os} GOARCH=$${arch} $(GOCMD) build -ldflags \
+				CGO_ENABLED=$(CGO_ENABLED) GOOS=$${os} GOARCH=$${arch} $(GOCMD) build -ldflags \
 				"-X main.version=$(TAG) -X main.build=$(BUILD) -X main.commit=$(COMMIT)" \
 				-o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $${PWD}`" .; \
 				cd $(WORKDIR); \
