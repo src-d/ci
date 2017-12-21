@@ -170,6 +170,24 @@ test-coverage:
 	fi; \
 	bash <(curl -s https://codecov.io/bash) $${args}; \
 
+# This target checks if files in a repository have changed after code generation
+# how to generate files is up to project
+#
+# Example:
+#
+# validate-commit: generate-assets no-changes-in-commit
+#
+# generate-assets:
+#    yarn build
+#    go-bindata dist
+no-changes-in-commit:
+	git status --untracked-files=no --porcelain | grep -qe '..*'; \
+	if  [ $$? -eq 0 ] ; then \
+		git diff|cat; \
+		echo >&2 "generated assets are out of sync"; \
+		exit 2; \
+	fi
+
 clean:
 	rm -rf $(BUILD_PATH) $(VENDOR_PATH)
 	$(GOCLEAN) .
