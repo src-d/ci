@@ -48,7 +48,7 @@ GOCLEAN = $(GOCMD) clean
 GOINSTALL = $(GOCMD) install -v
 GOGET = $(GOCMD) get -v -t
 GOTEST = $(GOCMD) test -v
-CGO_ENABLED = ?= 0
+CGO_ENABLED ?= 0
 
 # Coverage
 COVERAGE_REPORT = coverage.txt
