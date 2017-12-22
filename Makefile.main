@@ -9,6 +9,7 @@ DOCKERFILES ?= Dockerfile:$(PROJECT)
 PRERUN ?=
 POSTRUN ?=
 RACE_ENABLED ?=
+GOFLAGS ?=
 
 # Docker configuration
 DOCKER_ORG ?=
@@ -43,11 +44,11 @@ PKG_ARCH = amd64
 
 # Go parameters
 GOCMD = go
-GOBUILD = $(GOCMD) build
+GOBUILD = $(GOCMD) build $(GOFLAGS)
 GOCLEAN = $(GOCMD) clean
-GOINSTALL = $(GOCMD) install -v
+GOINSTALL = $(GOCMD) install -v $(GOFLAGS)
 GOGET = $(GOCMD) get -v -t
-GOTEST = $(GOCMD) test -v
+GOTEST = $(GOCMD) test -v $(GOFLAGS)
 CGO_ENABLED ?= 0
 
 # Coverage
@@ -124,7 +125,7 @@ packages:
 				if [ -d "$${cmd}" ]; then \
 					cd $${cmd}; \
 				fi; \
-				CGO_ENABLED=$(CGO_ENABLED) GOOS=$${os} GOARCH=$${arch} $(GOCMD) build -ldflags \
+				CGO_ENABLED=$(CGO_ENABLED) GOOS=$${os} GOARCH=$${arch} $(GOBUILD) -ldflags \
 				"-X main.version=$(TAG) -X main.build=$(BUILD) -X main.commit=$(COMMIT)" \
 				-o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $${PWD}`" .; \
 				cd $(WORKDIR); \
