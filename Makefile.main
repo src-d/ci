@@ -68,7 +68,7 @@ PACKAGES = $(shell go list ./... | grep -v '/vendor/')
 
 # Rules
 
-.PHONY: $(DEPENDENCIES) $(PACKAGES) dependencies docker-push packages test test-coverage pre-run post-run clean
+.PHONY: $(DEPENDENCIES) $(PACKAGES) dependencies docker-push docker-push-with-latest packages test test-coverage pre-run post-run clean
 
 $(DEPENDENCIES):
 	$(GOGET) $@/...
@@ -112,6 +112,18 @@ docker-push:
 			exit 1; \
 		fi; \
 		echo "Successfully uploaded image."; \
+	done; \
+
+docker-push-with-latest: docker-push
+	for d in $(DOCKERFILES); do \
+		repository=`echo $${d} | cut -d":" -f 2`; \
+		docker tag $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(TAG) $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:latest && \
+		docker push $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:latest; \
+		if [ $$? != 0 ]; then \
+			echo "Something went wrong pushing the latest image."; \
+			exit 1; \
+		fi; \
+		echo "Successfully pushed latest tag."; \
 	done; \
 
 packages:
