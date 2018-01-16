@@ -38,7 +38,7 @@ ifneq ($(origin CI), undefined)
 endif
 
 # Packages content
-PKG_OS = darwin linux
+PKG_OS ?= darwin linux
 PKG_ARCH = amd64
 
 # Go parameters
