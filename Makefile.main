@@ -5,8 +5,6 @@ SHELL := /bin/bash
 PROJECT ?=
 COMMANDS ?=
 DEPENDENCIES ?=
-PRERUN ?=
-POSTRUN ?=
 
 # Dockerfiles to be build, list of pairs file/name, example `Dockerfile:my-image`
 DOCKERFILES ?= Dockerfile:$(PROJECT)
@@ -159,16 +157,6 @@ $(COMMANDS):
 			fi; \
 		done; \
 	done
-
-post-run:
-	@for script in $(POSTRUN); do \
-		$(WORKDIR)/$${script}; \
-	done; \
-
-pre-run:
-	@for script in $(PRERUN); do \
-		$(WORKDIR)/$${script}; \
-	done; \
 
 test:
 	$(GOTEST) $(PACKAGES)
