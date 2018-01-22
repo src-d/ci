@@ -113,10 +113,7 @@ codecov:
 		echo "Unable to find '$(COVERAGE_REPORT)', execute 'make test-coverage' first."; \
 		exit 1; \
 	fi; \
-	if [[ ! -z "$(CODECOV_TOKEN)" ]] ; then \
-		args="-t $(CODECOV_TOKEN)"; \
-	fi; \
-	bash <(curl -s https://codecov.io/bash) $${args};
+	bash <(curl -s https://codecov.io/bash);
 
 build: $(COMMANDS)
 $(COMMANDS):
