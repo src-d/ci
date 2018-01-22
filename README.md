@@ -77,3 +77,12 @@ set if wasn't set previously.
 
 When writing your `Dockerfiles` you can find the compiled binaries at the
 `$(BUILD_PATH)/bin` path. Eg.: `ADD build/bin /bin`
+
+### Custom build parameters
+
+The `go build` command is supported by a group of variable, this variables are
+easily customizable to cover edge cases of complex builds.
+
+* `LD_FLAGS`: used to define the LD_FLAGS to be provide to the go compiler it-s preconfigure with some build infor variables. Eg.: `LG_FLAGS += -extldflags "-static" -s -w`
+* `GO_TAGS`: Tags to be used as `-tags` argument at `go build` and `go install`
+* `GO_BUILD_ENV`: Envariamble variables used at the `go build` execution . Eg.: `GO_BUILD_ENV = CGO_ENABLED=0`

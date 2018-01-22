@@ -7,7 +7,6 @@ COMMANDS ?=
 DEPENDENCIES ?=
 PRERUN ?=
 POSTRUN ?=
-GOFLAGS ?=
 
 # Dockerfiles to be build, list of pairs file/name, example `Dockerfile:my-image`
 DOCKERFILES ?= Dockerfile:$(PROJECT)
@@ -54,15 +53,32 @@ endif
 PKG_OS ?= darwin linux
 PKG_ARCH = amd64
 
+# LD_FLAGS to be use at `go build` calls.
+LD_FLAGS ?= -X main.version=$(VERSION) -X main.build=$(BUILD) -X main.commit=$(COMMIT)
+# Tags to be used as `-tags` argument at `go build` and `go install`
+GO_TAGS ?=
+# Arguments to be used in `go` commands.
+GO_GET_ARGS ?= -v -t
+GO_TEST_ARGS ?= -v
+GO_BUILD_ARGS ?= -ldflags "$(LD_FLAGS)"
+# Environment variable to use at `go build` calls.
+GO_BUILD_ENV ?=
+
 # Go parameters
+ifneq ($(GO_TAGS), )
+	GO_GET_ARGS += -tags "$(GO_TAGS)"
+	GO_TEST_ARGS += -tags "$(GO_TAGS)"
+	GO_BUILD_ARGS += -tags "$(GO_TAGS)"
+endif
+
 GOCMD = go
-GOBUILD = $(GOCMD) build $(GOFLAGS)
+GOGET = $(GOCMD) get $(GO_GET_ARGS)
+GOBUILD = $(GOCMD) build $(GO_BUILD_ARGS)
+GOTEST = $(GOCMD) test $(GO_TEST_ARGS)
+GOTEST_RACE = $(GOTEST) -race
 GOCLEAN = $(GOCMD) clean
-GOINSTALL = $(GOCMD) install -v $(GOFLAGS)
-GOGET = $(GOCMD) get -v -t
-GOTEST = $(GOCMD) test -v $(GOFLAGS)
-GOTEST_RACE = $(GOCMD) test -v -race $(GOFLAGS)
 CGO_ENABLED ?= 0
+
 
 # Coverage
 COVERAGE_REPORT = coverage.txt
@@ -76,7 +92,7 @@ PACKAGES = $(shell go list ./... | grep -v '/vendor/')
 .PHONY: $(DEPENDENCIES) $(PACKAGES) $(COMMANDS) dependencies docker-push docker-push-latest packages test test-coverage pre-run post-run clean
 
 dependencies: $(DEPENDENCIES)
-	$(GOGET) -t ./...; \
+	$(GOGET) -t ./...
 
 $(DEPENDENCIES):
 	$(GOGET) $@/...
@@ -121,31 +137,26 @@ docker-push: docker-login docker-build
 		fi; \
 	done;
 
-packages: | packages-compile packages-compress
-packages-compile: $(COMMANDS)
+packages: build
+	@cd $(BUILD_PATH); \
+	for os in $(PKG_OS); do \
+		for arch in $(PKG_ARCH); do \
+			tar -cvzf $(PROJECT)_$(VERSION)_$${os}_$${arch}.tar.gz $(PROJECT)_$${os}_$${arch}/; \
+		done; \
+	done
 
+build: $(COMMANDS)
 $(COMMANDS):
 	@cd $(WORKDIR)/$@; \
 	for os in $(PKG_OS); do \
 		for arch in $(PKG_ARCH); do \
 			mkdir -p $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}; \
-			CGO_ENABLED=$(CGO_ENABLED) GOOS=$${os} GOARCH=$${arch} \
-			$(GOBUILD) \
-				-ldflags "-X main.version=$(VERSION) -X main.build=$(BUILD) -X main.commit=$(COMMIT)" \
-				-o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $@`" \
-				.; \
+			$(GO_BUILD_ENV) GOOS=$${os} GOARCH=$${arch} \
+				$(GOBUILD) -o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $@`" .; \
 			if [ "$(DOCKER_OS)" == "$${os}" ] && [ "$(DOCKER_ARCH)" == "$${arch}" ]; then \
-				echo "Linking matching OS/Arch binaries to `build/bin` folder"; \
+				echo "Linking matching OS/Arch binaries to "build/bin" folder"; \
 				cp -rf $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch} $(BIN_PATH); \
 			fi; \
-		done; \
-	done
-
-packages-compress:
-	@cd $(BUILD_PATH); \
-	for os in $(PKG_OS); do \
-		for arch in $(PKG_ARCH); do \
-			tar -cvzf $(PROJECT)_$(VERSION)_$${os}_$${arch}.tar.gz $(PROJECT)_$${os}_$${arch}/; \
 		done; \
 	done
 
