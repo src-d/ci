@@ -30,6 +30,13 @@ For that, in travis, you can use the `env`. If your project is public, make sure
 
 ## Tasks
 
+### Tests packages
+
+Three rules are available `test` plain execution of test, `test-race` execute
+the test with the `-race` flag and `test-coverage` it runs the tests with
+coverage support and generate the `coverage.txt` file. The coverage file can
+be uploaded to codecov using the rule `codecov`.
+
 ### Building packages
 
 The rule `packages` creates the distribution packages, containing the command
