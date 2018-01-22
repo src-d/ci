@@ -6,5 +6,5 @@ import (
 )
 
 func TestHelloWorld(t *testing.T) {
-	HelloWorld()
+	HelloWorld("foo", "bar", "qux")
 }
