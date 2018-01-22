@@ -27,3 +27,12 @@ You will need to configure the following environment variables and make them ava
 Also, for publishing to GitHub, you will need to provide a GitHub API key.
 
 For that, in travis, you can use the `env`. If your project is public, make sure to use [secrets](https://docs.travis-ci.com/user/encryption-keys/).
+
+## Notes
+
+### Version calculation
+
+The `VERSION` variable is calculated based on the current git commit, plus a
+`-dirty` flag, if the worktree isn't clean. Example: `dev-01eda91-dirty`. If the
+environment is Travis, the `TRAVIS_BRANCH` is used as branch. The variable is
+set if wasn't set previously.
