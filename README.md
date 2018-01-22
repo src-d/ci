@@ -28,6 +28,35 @@ Also, for publishing to GitHub, you will need to provide a GitHub API key.
 
 For that, in travis, you can use the `env`. If your project is public, make sure to use [secrets](https://docs.travis-ci.com/user/encryption-keys/).
 
+## Tasks
+
+### Building packages
+
+The rule `packages` creates the distribution packages, containing the command
+line utilities defined by the `COMMANDS` compiled for the architectures and
+OS, define by `PKG_OS` and `PKG_ARCH`.
+
+The package filename is based on the pattern: `<project>_<version>_<os>_<arch>.tar.gz`
+
+### Docker build and push
+
+The rule `docker-build` builds the defined dockerfiles by `DOCKERFILES`. Several
+dockerfile may be define per project eg.:
+
+If we have an application with two different docker images, can be archived
+creating two different docker files one call `Dockerfile.server` and
+`Dockerfile.client`.
+
+```
+DOCKERFILES = Dockerfile.server:$(PROJECT)-server Dockerfile.client:$(PROJECT)-client
+```
+
+The `DOCKERFILES` variable should be defined as list of pairs file/name, example `Dockerfile:my-image`
+
+The rule `docker-push` build and push the defined dockerimages. The images are
+taggect with the current value of `VERSION`. If `DOCKER_PUST_LATEST` the `latest`
+tag is created and pushed too.
+
 ## Notes
 
 ### Version calculation
@@ -37,10 +66,7 @@ The `VERSION` variable is calculated based on the current git commit, plus a
 environment is Travis, the `TRAVIS_BRANCH` is used as `VERSION`. The variable is
 set if wasn't set previously.
 
-### Building packages
+### Writing your Dockerfiles
 
-The rule `packages` creates the distribution packages, containing the command
-line utilities defined by the `COMMANDS` compiled for the architectures and
-OS, define by `PKG_OS` and `PKG_ARCH`.
-
-The package filename is based on the pattern: `<project>_<version>_<os>_<arch>.tar.gz`
+When writing your `Dockerfiles` you can find the compiled binaries at the
+`$(BUILD_PATH)/bin` path. Eg.: `ADD build/bin /bin`

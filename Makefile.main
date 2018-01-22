@@ -5,17 +5,26 @@ SHELL := /bin/bash
 PROJECT ?=
 COMMANDS ?=
 DEPENDENCIES ?=
-DOCKERFILES ?= Dockerfile:$(PROJECT)
 PRERUN ?=
 POSTRUN ?=
 RACE_ENABLED ?=
 GOFLAGS ?=
 
-# Docker configuration
-DOCKER_ORG ?=
-DOCKER_USERNAME ?=
-DOCKER_PASSWORD ?=
+# Dockerfiles to be build, list of pairs file/name, example `Dockerfile:my-image`
+DOCKERFILES ?= Dockerfile:$(PROJECT)
+# Docker registry to push the docker image.
 DOCKER_REGISTRY ?= docker.io
+# Docker organization to be used at the docker image name.
+DOCKER_ORG ?= src-d
+# Username name used to login on the docker registry.
+DOCKER_USERNAME ?=
+# Password used to login on the docker registry.
+DOCKER_PASSWORD ?=
+# When `make docker-push` if non-empty also push the latest tag.
+DOCKER_PUSH_LATEST ?=
+# Docker OS/Arch used to match the right binaries.
+DOCKER_OS ?= $(shell docker version -f "{{.Server.Os}}")
+DOCKER_ARCH ?= $(shell docker version -f "{{.Server.Arch}}")
 
 # Checking mandatory variables
 ifndef PROJECT
@@ -25,6 +34,7 @@ endif
 # Environment
 WORKDIR := $(PWD)
 BUILD_PATH := $(WORKDIR)/build
+BIN_PATH := $(BUILD_PATH)/bin
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 
 # Build information
@@ -86,62 +96,51 @@ $(PACKAGES): $(VENDOR_PATH)
 
 dependencies: $(DEPENDENCIES) $(VENDOR_PATH) $(PACKAGES)
 
-docker-push:
-	@if [ "$(BRANCH)" == "master" ]; then \
-		exit; \
-	fi; \
-	if [ -z "$(DOCKER_ORG)" ]; then \
-		echo "DOCKER_ORG variable cannot be empty."; \
-		exit 1; \
-	fi; \
-	if [ -z "$(DOCKER_USERNAME)" ]; then \
+docker-validate:
+	@if [ -z "$(DOCKER_USERNAME)" ]; then \
 		echo "DOCKER_USERNAME variable cannot be empty."; \
 		exit 1; \
 	fi; \
 	if [ -z "$(DOCKER_PASSWORD)" ]; then \
 		echo "DOCKER_PASSWORD variable cannot be empty."; \
 		exit 1; \
+	fi
+
+docker-login: docker-validate
+	@docker login -u "$(DOCKER_USERNAME)" -p "$(DOCKER_PASSWORD)" $(DOCKER_REGISTRY); \
+
+docker-build: $(COMMANDS)
+	@if [ -z "$(DOCKER_ORG)" ]; then \
+		echo "DOCKER_ORG variable cannot be empty."; \
+		exit 1; \
 	fi; \
-	if [ ! -z "$(COMMANDS)" ]; then \
-		cp -r $(BUILD_PATH)/$(PROJECT)_linux_amd64 bin; \
-	fi; \
-	docker login -u "$(DOCKER_USERNAME)" -p "$(DOCKER_PASSWORD)" $(DOCKER_REGISTRY); \
 	for d in $(DOCKERFILES); do \
 		dockerfile=`echo $${d} | cut -d":" -f 1`; \
 		repository=`echo $${d} | cut -d":" -f 2`; \
-		echo "Building dockerfile $$dockerfile for repository $$repository."; \
-		docker build -t $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(VERSION) -f $(WORKDIR)/$$dockerfile . && \
+		docker build -t $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(VERSION) -f $(WORKDIR)/$$dockerfile .; \
+	done;
+
+docker-push: docker-login docker-build
+	@if [ "$(BRANCH)" == "master" ]; then \
+		echo "docker-push is disabled on master branch" \
+		exit 1; \
+	fi; \
+	for d in $(DOCKERFILES); do \
+		dockerfile=`echo $${d} | cut -d":" -f 1`; \
+		repository=`echo $${d} | cut -d":" -f 2`; \
 		docker push $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(VERSION); \
-		if [ $$? != 0 ]; then \
-			echo "Something went wrong pushing the image."; \
-			exit 1; \
+		if [ -n "$(DOCKER_PUSH_LATEST)" ]; then \
+		 	docker tag $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(VERSION) \
+				$(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:latest; \
+			docker push $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:latest; \
 		fi; \
-		echo "Successfully uploaded image."; \
-	done; \
-
-docker-push-latest: docker-push
-	for d in $(DOCKERFILES); do \
-		dockerfile=`echo $${d} | cut -d":" -f 1`; \
-		repository=`echo $${d} | cut -d":" -f 2`; \
-		echo "Tagging $$dockerfile as latest for repository $$repository."; \
-		docker tag $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(VERSION) $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:latest; \
-		if [ $$? != 0 ]; then \
-			echo "Can't tag image."; \
-			exit 1; \
-		fi; \
-		docker push $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:latest; \
-		if [ $$? != 0 ]; then \
-			echo "Something went wrong pushing the latest image."; \
-			exit 1; \
-		fi; \
-	done; \
-
+	done;
 
 packages: | packages-compile packages-compress
 packages-compile: $(COMMANDS)
 
 $(COMMANDS):
-	cd $(WORKDIR)/$@; \
+	@cd $(WORKDIR)/$@; \
 	for os in $(PKG_OS); do \
 		for arch in $(PKG_ARCH); do \
 			mkdir -p $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}; \
@@ -150,11 +149,15 @@ $(COMMANDS):
 				-ldflags "-X main.version=$(VERSION) -X main.build=$(BUILD) -X main.commit=$(COMMIT)" \
 				-o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $@`" \
 				.; \
+			if [ "$(DOCKER_OS)" == "$${os}" ] && [ "$(DOCKER_ARCH)" == "$${arch}" ]; then \
+				echo "Linking matching OS/Arch binaries to `build/bin` folder"; \
+				cp -rf $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch} $(BIN_PATH); \
+			fi; \
 		done; \
 	done
 
 packages-compress:
-	cd $(BUILD_PATH); \
+	@cd $(BUILD_PATH); \
 	for os in $(PKG_OS); do \
 		for arch in $(PKG_ARCH); do \
 			tar -cvzf $(PROJECT)_$(VERSION)_$${os}_$${arch}.tar.gz $(PROJECT)_$${os}_$${arch}/; \
@@ -215,5 +218,5 @@ no-changes-in-commit:
 	fi
 
 clean:
-	rm -rf $(BUILD_PATH) $(VENDOR_PATH)
+	rm -rf $(BUILD_PATH) $(BIN_PATH) $(VENDOR_PATH)
 	$(GOCLEAN) .
