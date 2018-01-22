@@ -1,10 +1,10 @@
-# Default shell
-SHELL := /bin/bash
-
 # Package configuration
 PROJECT ?=
 COMMANDS ?=
 DEPENDENCIES ?=
+
+# Default shell
+SHELL := /bin/bash
 
 # Dockerfiles to be build, list of pairs file/name, example `Dockerfile:my-image`
 DOCKERFILES ?= Dockerfile:$(PROJECT)
@@ -77,7 +77,6 @@ GOTEST_RACE = $(GOTEST) -race
 GOCLEAN = $(GOCMD) clean
 CGO_ENABLED ?= 0
 
-
 # Coverage
 COVERAGE_REPORT = coverage.txt
 COVERAGE_PROFILE = profile.out
@@ -86,14 +85,56 @@ COVERAGE_MODE = atomic
 PACKAGES = $(shell go list ./... | grep -v '/vendor/')
 
 # Rules
-
-.PHONY: $(DEPENDENCIES) $(PACKAGES) $(COMMANDS) dependencies docker-push docker-push-latest packages test test-coverage pre-run post-run clean
-
 dependencies: $(DEPENDENCIES)
 	$(GOGET) -t ./...
 
 $(DEPENDENCIES):
 	$(GOGET) $@/...
+
+test:
+	$(GOTEST) $(PACKAGES)
+
+test-race:
+	$(GOTEST_RACE) $(PACKAGES)
+
+test-coverage:
+	@cd $(WORKDIR); \
+	echo "" > $(COVERAGE_REPORT); \
+	for dir in $(PACKAGES); do \
+		$(GOTEST) $$dir -coverprofile=$(COVERAGE_PROFILE) -covermode=$(COVERAGE_MODE); \
+		if [ -f $(COVERAGE_PROFILE) ]; then \
+			cat $(COVERAGE_PROFILE) >> $(COVERAGE_REPORT); \
+			rm $(COVERAGE_PROFILE); \
+		fi; \
+	done || exit 1; \
+
+codecov:
+	@if [ ! -f $(COVERAGE_REPORT) ]; then \
+		echo "Unable to find '$(COVERAGE_REPORT)', execute 'make test-coverage' first."; \
+		exit 1; \
+	fi; \
+	if [[ ! -z "$(CODECOV_TOKEN)" ]] ; then \
+		args="-t $(CODECOV_TOKEN)"; \
+	fi; \
+	bash <(curl -s https://codecov.io/bash) $${args};
+
+build: $(COMMANDS)
+$(COMMANDS):
+	@cd $(WORKDIR)/$@; \
+	for os in $(PKG_OS); do \
+		for arch in $(PKG_ARCH); do \
+			mkdir -p $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}; \
+			$(GO_BUILD_ENV) GOOS=$${os} GOARCH=$${arch} \
+				$(GOBUILD) -o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $@`" .; \
+			if [ "$(DOCKER_OS)" == "$${os}" ] && [ "$(DOCKER_ARCH)" == "$${arch}" ]; then \
+				echo "Linking matching OS/Arch binaries to "build/bin" folder"; \
+				cp -rf $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch} $(BIN_PATH); \
+			fi; \
+		done; \
+	done
+
+docker-login: docker-validate
+	@docker login -u "$(DOCKER_USERNAME)" -p "$(DOCKER_PASSWORD)" $(DOCKER_REGISTRY); \
 
 docker-validate:
 	@if [ -z "$(DOCKER_USERNAME)" ]; then \
@@ -104,9 +145,6 @@ docker-validate:
 		echo "DOCKER_PASSWORD variable cannot be empty."; \
 		exit 1; \
 	fi
-
-docker-login: docker-validate
-	@docker login -u "$(DOCKER_USERNAME)" -p "$(DOCKER_PASSWORD)" $(DOCKER_REGISTRY); \
 
 docker-build: $(COMMANDS)
 	@if [ -z "$(DOCKER_ORG)" ]; then \
@@ -143,58 +181,10 @@ packages: build
 		done; \
 	done
 
-build: $(COMMANDS)
-$(COMMANDS):
-	@cd $(WORKDIR)/$@; \
-	for os in $(PKG_OS); do \
-		for arch in $(PKG_ARCH); do \
-			mkdir -p $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}; \
-			$(GO_BUILD_ENV) GOOS=$${os} GOARCH=$${arch} \
-				$(GOBUILD) -o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $@`" .; \
-			if [ "$(DOCKER_OS)" == "$${os}" ] && [ "$(DOCKER_ARCH)" == "$${arch}" ]; then \
-				echo "Linking matching OS/Arch binaries to "build/bin" folder"; \
-				cp -rf $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch} $(BIN_PATH); \
-			fi; \
-		done; \
-	done
+clean:
+	rm -rf $(BUILD_PATH) $(BIN_PATH) $(VENDOR_PATH)
+	$(GOCLEAN) .
 
-test:
-	$(GOTEST) $(PACKAGES)
-
-test-race:
-	$(GOTEST_RACE) $(PACKAGES)
-
-test-coverage:
-	@cd $(WORKDIR); \
-	echo "" > $(COVERAGE_REPORT); \
-	for dir in $(PACKAGES); do \
-		$(GOTEST) $$dir -coverprofile=$(COVERAGE_PROFILE) -covermode=$(COVERAGE_MODE); \
-		if [ -f $(COVERAGE_PROFILE) ]; then \
-			cat $(COVERAGE_PROFILE) >> $(COVERAGE_REPORT); \
-			rm $(COVERAGE_PROFILE); \
-		fi; \
-	done || exit 1; \
-
-codecov:
-	@if [ ! -f $(COVERAGE_REPORT) ]; then \
-		echo "Unable to find '$(COVERAGE_REPORT)', execute 'make test-coverage' first."; \
-		exit 1; \
-	fi; \
-	if [[ ! -z "$(CODECOV_TOKEN)" ]] ; then \
-		args="-t $(CODECOV_TOKEN)"; \
-	fi; \
-	bash <(curl -s https://codecov.io/bash) $${args};
-
-# This target checks if files in a repository have changed after code generation
-# how to generate files is up to project
-#
-# Example:
-#
-# validate-commit: generate-assets no-changes-in-commit
-#
-# generate-assets:
-#    yarn build
-#    go-bindata dist
 no-changes-in-commit:
 	git status --untracked-files=no --porcelain | grep -qe '..*'; \
 	if  [ $$? -eq 0 ] ; then \
@@ -203,6 +193,9 @@ no-changes-in-commit:
 		exit 2; \
 	fi
 
-clean:
-	rm -rf $(BUILD_PATH) $(BIN_PATH) $(VENDOR_PATH)
-	$(GOCLEAN) .
+.PHONY: dependencies $(DEPENDENCIES) \
+		build $(COMMANDS) \
+		docker-login docker-validate docker-build docker-push \
+		packages \
+		clean \
+		no-changes-in-commit

@@ -86,3 +86,19 @@ easily customizable to cover edge cases of complex builds.
 * `LD_FLAGS`: used to define the LD_FLAGS to be provide to the go compiler it-s preconfigure with some build infor variables. Eg.: `LG_FLAGS += -extldflags "-static" -s -w`
 * `GO_TAGS`: Tags to be used as `-tags` argument at `go build` and `go install`
 * `GO_BUILD_ENV`: Envariamble variables used at the `go build` execution . Eg.: `GO_BUILD_ENV = CGO_ENABLED=0`
+
+### Rule `no-changes-in-commit`
+
+The `no-changes-in-commit` rule checks if files in a repository have changed.
+Useful to detect no commited generated code for projects based on `go generate`
+or `gobindata`.
+
+Example:
+
+```
+validate-commit: generate-assets no-changes-in-commit
+
+generate-assets:
+  yarn build
+  go-bindata dist
+```
