@@ -34,5 +34,13 @@ For that, in travis, you can use the `env`. If your project is public, make sure
 
 The `VERSION` variable is calculated based on the current git commit, plus a
 `-dirty` flag, if the worktree isn't clean. Example: `dev-01eda91-dirty`. If the
-environment is Travis, the `TRAVIS_BRANCH` is used as branch. The variable is
+environment is Travis, the `TRAVIS_BRANCH` is used as `VERSION`. The variable is
 set if wasn't set previously.
+
+### Building packages
+
+The rule `packages` creates the distribution packages, containing the command
+line utilities defined by the `COMMANDS` compiled for the architectures and
+OS, define by `PKG_OS` and `PKG_ARCH`.
+
+The package filename is based on the pattern: `<project>_<version>_<os>_<arch>.tar.gz`

@@ -73,7 +73,7 @@ PACKAGES = $(shell go list ./... | grep -v '/vendor/')
 
 # Rules
 
-.PHONY: $(DEPENDENCIES) $(PACKAGES) dependencies docker-push docker-push-latest packages test test-coverage pre-run post-run clean
+.PHONY: $(DEPENDENCIES) $(PACKAGES) $(COMMANDS) dependencies docker-push docker-push-latest packages test test-coverage pre-run post-run clean
 
 $(DEPENDENCIES):
 	$(GOGET) $@/...
@@ -136,25 +136,30 @@ docker-push-latest: docker-push
 		fi; \
 	done; \
 
-packages:
-	@for os in $(PKG_OS); do \
+
+packages: | packages-compile packages-compress
+packages-compile: $(COMMANDS)
+
+$(COMMANDS):
+	cd $(WORKDIR)/$@; \
+	for os in $(PKG_OS); do \
 		for arch in $(PKG_ARCH); do \
-			cd $(WORKDIR); \
 			mkdir -p $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}; \
-			for cmd in $(COMMANDS); do \
-				if [ -d "$${cmd}" ]; then \
-					cd $${cmd}; \
-				fi; \
-				CGO_ENABLED=$(CGO_ENABLED) GOOS=$${os} GOARCH=$${arch} $(GOBUILD) -ldflags \
-				"-X main.version=$(VERSION) -X main.build=$(BUILD) -X main.commit=$(COMMIT)" \
-				-o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $${PWD}`" .; \
-				cd $(WORKDIR); \
-			done; \
-			cd $(BUILD_PATH); \
+			CGO_ENABLED=$(CGO_ENABLED) GOOS=$${os} GOARCH=$${arch} \
+			$(GOBUILD) \
+				-ldflags "-X main.version=$(VERSION) -X main.build=$(BUILD) -X main.commit=$(COMMIT)" \
+				-o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $@`" \
+				.; \
+		done; \
+	done
+
+packages-compress:
+	cd $(BUILD_PATH); \
+	for os in $(PKG_OS); do \
+		for arch in $(PKG_ARCH); do \
 			tar -cvzf $(PROJECT)_$(VERSION)_$${os}_$${arch}.tar.gz $(PROJECT)_$${os}_$${arch}/; \
 		done; \
-	done; \
-	cp -r $(BUILD_PATH)/$(PROJECT)_linux_amd64 $(WORKDIR)/bin; \
+	done
 
 post-run:
 	@for script in $(POSTRUN); do \
