@@ -1,5 +1,5 @@
-// Package ci is just an example.
-package ci
+// Package basic is just an example.
+package basic
 
 import (
 	"testing"
