@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-EXAMPLES="examples/ci examples/glide"
+EXAMPLES="examples/basic"
 
 for example in ${EXAMPLES} ; do
 	echo "Running $example"

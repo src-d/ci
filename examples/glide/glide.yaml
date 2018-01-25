@@ -1,4 +1,0 @@
-package: github.com/src-d/ci/examples/glide
-import:
-- package: my.vendor/lib
-  repo: https://github.com/pkg/errors
