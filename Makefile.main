@@ -6,17 +6,18 @@ DEPENDENCIES ?=
 # Default shell
 SHELL := /bin/bash
 
-# Dockerfiles to be build, list of pairs file/name, example `Dockerfile:my-image`
+# Dockerfiles to be built, list of file:name pairs, example `Dockerfile:my-image`
 DOCKERFILES ?= Dockerfile:$(PROJECT)
-# Docker registry to push the docker image.
+# Docker registry where the docker image should be pushed to.
 DOCKER_REGISTRY ?= docker.io
 # Docker organization to be used at the docker image name.
 DOCKER_ORG ?= src-d
-# Username name used to login on the docker registry.
+# Username used to login on the docker registry.
 DOCKER_USERNAME ?=
 # Password used to login on the docker registry.
 DOCKER_PASSWORD ?=
-# When `make docker-push` if non-empty also push the latest tag.
+# When `make docker-push`, setting DOCKER_PUSH_LATEST to any non-empty value
+# will cause make docker-push to also push the latest tag.
 DOCKER_PUSH_LATEST ?=
 # Docker OS/Arch used to match the right binaries.
 DOCKER_OS ?= $(shell docker version -f "{{.Server.Os}}")
@@ -35,7 +36,7 @@ BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 
 # Build information
 BUILD ?= $(shell date +"%m-%d-%Y_%H_%M_%S")
-COMMIT ?= $(shell git rev-parse HEAD | cut -c1-7)
+COMMIT ?= $(shell git rev-parse --short HEAD)
 GIT_DIRTY = $(shell test -n "`git status --porcelain`" && echo "-dirty" || true)
 DEV_PREFIX := dev
 VERSION ?= $(DEV_PREFIX)-$(COMMIT)$(GIT_DIRTY)
