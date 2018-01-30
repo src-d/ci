@@ -193,6 +193,7 @@ no-changes-in-commit:
 
 .PHONY: dependencies $(DEPENDENCIES) \
 		build $(COMMANDS) \
+		test test-race test-coverage \
 		docker-login docker-validate docker-build docker-push \
 		packages \
 		clean \
