@@ -126,7 +126,8 @@ $(COMMANDS):
 				$(GOBUILD) -o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $@`" .; \
 			if [ "$(DOCKER_OS)" == "$${os}" ] && [ "$(DOCKER_ARCH)" == "$${arch}" ]; then \
 				echo "Linking matching OS/Arch binaries to "build/bin" folder"; \
-				cp -rf $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch} $(BIN_PATH); \
+				mkdir -p $(BIN_PATH); \
+				cp -rf $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $@` $(BIN_PATH); \
 			fi; \
 		done; \
 	done
