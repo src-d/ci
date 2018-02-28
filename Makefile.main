@@ -30,12 +30,19 @@ COMMIT ?= $(shell git log --format='%H' -n 1 | cut -c1-10)
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 
 # travis CI
-ifneq ($(origin CI), undefined)
+ifeq ($(TRAVIS), true)
 	COMMIT := $(shell echo $(TRAVIS_COMMIT) | cut -c1-10)
 	BRANCH := $(TRAVIS_BRANCH)
 	TAG := $(TRAVIS_TAG)
 	WORKDIR := $(TRAVIS_BUILD_DIR)
 	BUILD_PATH := $(WORKDIR)/build
+endif
+
+# drone CI
+ifeq ($(DRONE), true)
+	COMMIT := $(shell echo $(DRONE_COMMIT) | cut -c1-10)
+	BRANCH := $(DRONE_BRANCH)
+	TAG := $(DRONE_TAG)
 endif
 
 # Packages content
