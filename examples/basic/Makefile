@@ -7,8 +7,9 @@ COMMANDS = cmd/test
 
 # Including ci Makefile
 CI_REPOSITORY ?= https://github.com/src-d/ci.git
+CI_BRANCH ?= v1
 CI_PATH ?= $(shell pwd)/.ci
 MAKEFILE := $(CI_PATH)/Makefile.main
 $(MAKEFILE):
-	git clone --quiet --depth 1 $(CI_REPOSITORY) $(CI_PATH);
+	git clone --quiet --depth 1 -b $(CI_BRANCH) $(CI_REPOSITORY) $(CI_PATH);
 -include $(MAKEFILE)
