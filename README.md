@@ -8,12 +8,12 @@ This project contains the common CI configuration for all source{d} Go projects,
 
 Right now, this has only been tested with TravisCI.
 
-- [Makefile.main](https://github.com/src-d/ci/tree/master/examples/Makefile.main): a common Makefile that should be included in all source{d}'s Go projects. Just set up some variables:
+- [Makefile](https://github.com/src-d/ci/blob/master/examples/ci/Makefile): a common Makefile that should be included in all source{d}'s Go projects. Just set up some variables:
   - **PROJECT**: the project's name (mandatory).
   - **COMMANDS**: packages and subpackages to be compiled as binaries (mandatory).
   - **DOCKERFILES**: dockerfiles presents in the project (optional).
 
-- [.travis.yml](https://github.com/src-d/ci/tree/master/examples/.travis.yml): config file used by TravisCI to create the build and such. Ideally, it's just necessary to specify the CODECOV_TOKEN and the proper project's name under the deploy section.
+- [.travis.yml](https://github.com/src-d/ci/blob/master/examples/ci/.travis.yml): config file used by TravisCI to create the build and such. Ideally, it's just necessary to specify the CODECOV_TOKEN and the proper project's name under the deploy section.
 
 Use the files under [examples](https://github.com/src-d/ci/tree/master/examples) as a template.
 
