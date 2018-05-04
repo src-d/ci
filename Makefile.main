@@ -197,9 +197,10 @@ clean:
 	$(GOCLEAN) .
 
 no-changes-in-commit:
-	git status --untracked-files=no --porcelain | grep -qe '..*'; \
+	@git status --untracked-files=normal --porcelain | grep -qe '..*'; \
 	if  [ $$? -eq 0 ] ; then \
 		git diff|cat; \
+		git status --untracked-files=normal --porcelain; \
 		echo >&2 "generated assets are out of sync"; \
 		exit 2; \
 	fi

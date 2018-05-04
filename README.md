@@ -92,14 +92,16 @@ customizable to cover edge cases of complex builds.
 
 ### Rule `no-changes-in-commit`
 
-The `no-changes-in-commit` rule checks if files in the repository have changed.
-Useful to detect non-commited generated code for projects based on `go generate`
-or `gobindata`.
+The `no-changes-in-commit` rule checks if not ignored files in the repository have changed or have been added.
+Useful to detect non-commited generated code for projects based on `go generate`, `gobindata` or `dep ensure`.
 
 Example:
 
-```
-validate-commit: generate-assets no-changes-in-commit
+```shell
+validate-commit: dependencies generate-assets no-changes-in-commit
+
+dependencies:
+  dep ensure
 
 generate-assets:
   yarn build
