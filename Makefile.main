@@ -85,7 +85,6 @@ GOBUILD = $(GOCMD) build $(GO_BUILD_ARGS)
 GOTEST = $(GOCMD) test $(GO_TEST_ARGS)
 GOTEST_RACE = $(GOTEST) -race
 GOCLEAN = $(GOCMD) clean
-CGO_ENABLED ?= 0
 
 # Coverage
 COVERAGE_REPORT = coverage.txt
