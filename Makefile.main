@@ -134,7 +134,7 @@ $(COMMANDS):
 	for os in $(PKG_OS); do \
 		for arch in $(PKG_ARCH); do \
 			mkdir -p $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}; \
-			$(GO_BUILD_ENV) GOOS=$${os} GOARCH=$${arch} \
+			$(GO_BUILD_ENV) CGO_ENABLED=$(CGO_ENABLED) GOOS=$${os} GOARCH=$${arch} \
 				$(GOBUILD) -o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $@`" .; \
 			if [ "$(DOCKER_OS)" == "$${os}" ] && [ "$(DOCKER_ARCH)" == "$${arch}" ]; then \
 				echo "Linking matching OS/Arch binaries to "build/bin" folder"; \
