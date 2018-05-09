@@ -96,6 +96,9 @@ COVERAGE_MODE = atomic
 PACKAGES = $(shell go list ./... | grep -v '/vendor/')
 
 # Rules
+
+.SUFFIXES:
+
 dependencies: $(DEPENDENCIES)
 	$(GOGET) -t ./...
 
@@ -219,6 +222,12 @@ prepare-services:
 	wget -qO - https://raw.githubusercontent.com/smola/ci-tricks/master/get.sh | bash
 endif
 
+ci-install: | prepare-services dependencies
+	@echo
+
+ci-script: | test-coverage codecov packages
+	@echo
+
 .PHONY: dependencies $(DEPENDENCIES) \
 		build $(COMMANDS) \
 		test test-race test-coverage \
@@ -226,4 +235,5 @@ endif
 		packages \
 		clean \
 		no-changes-in-commit \
-		prepare-services
+		prepare-services \
+		ci-script ci-install
