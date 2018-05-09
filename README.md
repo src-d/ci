@@ -30,6 +30,13 @@ For that, in travis, you can use the `env`. If your project is public, make sure
 
 ## Tasks
 
+### Main hooks
+
+These rules are meant to be used as is on their corresponding CI phase:
+
+* `ci-install` (for Travis and Appveyor `install` phase): runs `dependencies`.
+* `ci-script` (for Travis `script` and Appveyor `test_script` phases): runs `test` by default. If `DEFAULT_BUILD` environment variable is set, it runs `test-coverage`, `codecov` and `packages`.
+
 ### Tests packages
 
 There are thee rules available for testing:
