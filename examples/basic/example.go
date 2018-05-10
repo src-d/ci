@@ -6,7 +6,7 @@ import (
 )
 
 func HelloWorld(build, version, commit string) {
-	fmt.Println("Hello World! Application\n")
+	fmt.Println("Hello World! Application")
 	fmt.Println("Build information:")
 	fmt.Printf("\tBuild: %s\n\tVersion: %s\n\tCommit: %s\n", build, version, commit)
 }
