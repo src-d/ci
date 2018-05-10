@@ -1,5 +1,7 @@
 # source{d} CI
 
+## `master` branch is deprecated, please go to [`v1` branch](https://github.com/src-d/ci/tree/v1)
+
 This project contains the common CI configuration for all source{d} Go projects, including the following functionalities:
 
 * Automatic docker image upload on tag. It will upload the image to `$(DOCKER_ORG)/$(PROJECT)` on the given `DOCKER_REGISTRY`.
