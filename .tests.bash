@@ -5,7 +5,8 @@ EXAMPLES="examples/basic"
 for example in ${EXAMPLES} ; do
 	echo "Running $example"
 
-	cp Makefile.main ${example}/Makefile.main
+	mkdir -p ${example}/.ci
+	cp Makefile.main ${example}/.ci/
 	pushd $example &> /dev/null
 
 	make dependencies
