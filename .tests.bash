@@ -1,4 +1,10 @@
-#!/bin/bash -xe
+#!/bin/bash
+set -xe
+
+MAKE=make
+if [[ ! -z ${APPVEYOR} ]]; then
+	MAKE=mingw32-make
+fi
 
 EXAMPLES="examples/basic"
 
@@ -8,13 +14,13 @@ for example in ${EXAMPLES} ; do
 	cp Makefile.main ${example}/Makefile.main
 	pushd $example &> /dev/null
 
-	make dependencies
+	"${MAKE}" dependencies
 
-	make test
+	"${MAKE}" test
 
-	make test-coverage
+	"${MAKE}" test-coverage
 
-	make packages
+	"${MAKE}" packages
 
 	popd &> /dev/null
 done
