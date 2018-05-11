@@ -3,6 +3,10 @@ language: go
 go:
   - 1.10.x
 
+os:
+  - linux
+  - osx
+
 script:
   - ./.tests.bash
 
