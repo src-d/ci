@@ -11,7 +11,7 @@ DOCKERFILES ?= Dockerfile:$(PROJECT)
 # Docker registry where the docker image should be pushed to.
 DOCKER_REGISTRY ?= docker.io
 # Docker organization to be used at the docker image name.
-DOCKER_ORG ?= src-d
+DOCKER_ORG ?= srcd
 # Username used to login on the docker registry.
 DOCKER_USERNAME ?=
 # Password used to login on the docker registry.
