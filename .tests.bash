@@ -23,5 +23,7 @@ for example in ${EXAMPLES} ; do
 
 	"${MAKE}" packages
 
+	POSTGRESQL_VERSION=9.6 RABBITMQ_VERSION=any "${MAKE}" prepare-services
+
 	popd &> /dev/null
 done

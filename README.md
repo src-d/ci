@@ -67,6 +67,18 @@ docker images. The images are tagged with the current value of `VERSION`. If
 `DOCKER_PUSH_LATEST` is provided with any value, a `latest` tag is created and
 pushed too.
 
+### External service setup
+
+The `ci-install` rule sets up external services consistently across different CI providers
+and operating systems. External services to setup are specified with environment variables:
+
+* `POSTGRESQL_VERSION`: if not empty, PostgreSQL will be installed or started. Check supported versions on
+   [Travis CI](https://docs.travis-ci.com/user/database-setup/#Using-a-different-PostgreSQL-Version),
+   [Appveyor](https://www.appveyor.com/docs/services-databases/#postgresql) and [Homebrew](http://formulae.brew.sh/formula/). Currently `9.4`, `9.5` and `9.6 are supported across all of them.
+* `RABBITMQ_VERSION`, if not empty, RabbitMQ will be installed or started. Currently `any` is the only supported value.
+
+[Check all supported services and versions.](https://github.com/smola/ci-tricks/#tricks)
+
 ## Notes
 
 ### Version calculation

@@ -23,6 +23,10 @@ DOCKER_PUSH_LATEST ?=
 DOCKER_OS ?= $(shell docker version -f "{{.Server.Os}}")
 DOCKER_ARCH ?= $(shell docker version -f "{{.Server.Arch}}")
 
+# Backend services
+POSTGRESQL_VERSION ?=
+RABBITMQ_VERSION ?=
+
 # Checking mandatory variables
 ifndef PROJECT
 $(error ERROR! The PROJECT variable cannot be empty)
@@ -33,6 +37,7 @@ WORKDIR := $(PWD)
 BUILD_PATH := $(WORKDIR)/build
 BIN_PATH := $(BUILD_PATH)/bin
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
+CI_PATH ?= $(WORKDIR)/.ci
 
 # Build information
 BUILD ?= $(shell date +"%m-%d-%Y_%H_%M_%S")
@@ -205,10 +210,20 @@ no-changes-in-commit:
 		exit 2; \
 	fi
 
+export POSTGRESQL_VERSION RABBITMQ_VERSION
+ifdef APPVEYOR
+prepare-services:
+	pwsh -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/smola/ci-tricks/master/get.ps1'))"
+else
+prepare-services:
+	wget -qO - https://raw.githubusercontent.com/smola/ci-tricks/master/get.sh | bash
+endif
+
 .PHONY: dependencies $(DEPENDENCIES) \
 		build $(COMMANDS) \
 		test test-race test-coverage \
 		docker-login docker-validate docker-build docker-push \
 		packages \
 		clean \
-		no-changes-in-commit
+		no-changes-in-commit \
+		prepare-services
