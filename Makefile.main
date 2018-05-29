@@ -33,11 +33,10 @@ $(error ERROR! The PROJECT variable cannot be empty)
 endif
 
 # Environment
-WORKDIR := $(PWD)
-BUILD_PATH := $(WORKDIR)/build
+BUILD_PATH := build
 BIN_PATH := $(BUILD_PATH)/bin
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
-CI_PATH ?= $(WORKDIR)/.ci
+CI_PATH ?= .ci
 
 # Build information
 BUILD ?= $(shell date +"%m-%d-%Y_%H_%M_%S")
@@ -48,8 +47,6 @@ VERSION ?= $(DEV_PREFIX)-$(COMMIT)$(GIT_DIRTY)
 
 # Travis CI
 ifeq ($(TRAVIS), true)
-	WORKDIR := $(TRAVIS_BUILD_DIR)
-	BUILD_PATH := $(WORKDIR)/build
 	VERSION := $(TRAVIS_BRANCH)
 endif
 
@@ -112,7 +109,6 @@ test-race:
 	$(GOTEST_RACE) $(PACKAGES)
 
 test-coverage:
-	@cd $(WORKDIR); \
 	echo "" > $(COVERAGE_REPORT); \
 	for dir in $(PACKAGES); do \
 		$(GOTEST) $$dir -coverprofile=$(COVERAGE_PROFILE) -covermode=$(COVERAGE_MODE); \
@@ -134,16 +130,20 @@ codecov:
 
 build: $(COMMANDS)
 $(COMMANDS):
-	@cd $(WORKDIR)/$@; \
+	@if [ "$@" == "." ]; then \
+		BIN=`basename $(CURDIR)` ; \
+	else \
+		BIN=`basename $@` ; \
+	fi && \
 	for os in $(PKG_OS); do \
 		for arch in $(PKG_ARCH); do \
-			mkdir -p $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}; \
+			mkdir -p $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch} && \
 			$(GO_BUILD_ENV) GOOS=$${os} GOARCH=$${arch} \
-				$(GOBUILD) -o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $@`" .; \
+				$(GOBUILD) -o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/$${BIN}" ./$@ && \
 			if [ "$(DOCKER_OS)" == "$${os}" ] && [ "$(DOCKER_ARCH)" == "$${arch}" ]; then \
-				echo "Linking matching OS/Arch binaries to "build/bin" folder"; \
-				mkdir -p $(BIN_PATH); \
-				cp -rf $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $@` $(BIN_PATH); \
+				echo "Linking matching OS/Arch binaries to "build/bin" folder" && \
+				mkdir -p $(BIN_PATH) && \
+				cp -rf $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/$${BIN} $(BIN_PATH); \
 			fi; \
 		done; \
 	done
@@ -169,7 +169,7 @@ docker-build: $(COMMANDS)
 	for d in $(DOCKERFILES); do \
 		dockerfile=`echo $${d} | cut -d":" -f 1`; \
 		repository=`echo $${d} | cut -d":" -f 2`; \
-		docker build -t $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(VERSION) -f $(WORKDIR)/$$dockerfile .; \
+		docker build -t $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(VERSION) -f $$dockerfile .; \
 	done;
 
 docker-push: docker-login docker-build
