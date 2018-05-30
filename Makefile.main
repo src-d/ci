@@ -227,8 +227,13 @@ endif
 ci-install: | prepare-services dependencies
 	@echo
 
+ifeq ($($strip $(COMMANDS)),)
+ci-script: | test-coverage codecov
+	@echo
+else
 ci-script: | test-coverage codecov packages
 	@echo
+endif
 
 .PHONY: dependencies $(DEPENDENCIES) \
 		build $(COMMANDS) \
