@@ -130,7 +130,7 @@ codecov:
 		echo "Unable to find '$(COVERAGE_REPORT)', execute 'make test-coverage' first."; \
 		exit 1; \
 	fi; \
-	bash <(curl -s https://codecov.io/bash);
+	wget -q -O - https://codecov.io/bash | bash
 
 build: $(COMMANDS)
 $(COMMANDS):
