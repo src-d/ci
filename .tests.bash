@@ -15,11 +15,9 @@ for example in ${EXAMPLES} ; do
 	cp Makefile.main ${example}/.ci/
 	pushd $example &> /dev/null
 
-	"${MAKE}" dependencies
+	"${MAKE}" ci-install
 
-	"${MAKE}" test
-
-	"${MAKE}" test-coverage
+	"${MAKE}" ci-script
 
 	"${MAKE}" packages
 

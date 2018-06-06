@@ -1,36 +1,42 @@
 language: go
 
-go:
-  - 1.9
+# NOTE: If testing a single Go version, define it here and skip the `go`
+#       parameter in the job matrix definition:
+# go: 1.10.x
 
-matrix:
-  fast_finish: true
-  allow_failures:
-    - go: tip
-
+# Some default values, these can be skipped in the matrix definition.
 sudo: required
+dist: trusty
 
-services:
-  - docker
-
+# Scripts for the default test stage.
 install:
-  - make dependencies
+  - make ci-install
 
 script:
-  - make test-coverage
-  - make codecov
+  - make ci-script
 
-before_deploy:
-  - make packages
-
-deploy:
-  provider: releases
-  api_key: $GITHUB_TOKEN
-  file_glob: true
-  file: build/*.tar.gz
-  skip_cleanup: true
-  on:
-    tags: true
-
-after_deploy:
-  - make docker-push
+jobs:
+  include:
+    # Matrix for the default test stage. It runs in parallel.
+    - {os: linux,                        go: 1.9.x}
+    - {os: linux,                        go: 1.10.x}
+    - {os: osx,   xcode_image: xcode8.3, go: 1.9.x}
+    - {os: osx,   xcode_image: xcode8.3, go: 1.10.x}
+    - {os: osx,   xcode_image: xcode9.3, go: 1.9.x}
+    - {os: osx,   xcode_image: xcode8.3, go: 1.10.x}
+    # Deploy stage, running only on tags.
+    - stage: deploy
+      if: tag IS present
+      os: linux
+      services:
+        - docker
+      script:
+        - make packages
+      deploy:
+        provider: releases
+        api_key: $GITHUB_TOKEN
+        file_glob: true
+        file: build/*.tar.gz
+        skip_cleanup: true
+      after_deploy:
+        - make docker-push
