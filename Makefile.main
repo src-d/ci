@@ -216,9 +216,11 @@ no-changes-in-commit:
 export POSTGRESQL_VERSION RABBITMQ_VERSION
 ifdef APPVEYOR
 prepare-services:
+	cd $(CI_PATH) && \
 	pwsh -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/smola/ci-tricks/master/get.ps1'))"
 else
 prepare-services:
+	cd $(CI_PATH) && \
 	wget -qO - https://raw.githubusercontent.com/smola/ci-tricks/master/get.sh | bash
 endif
 
