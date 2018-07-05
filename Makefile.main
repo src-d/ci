@@ -46,17 +46,13 @@ DEV_PREFIX := dev
 VERSION ?= $(DEV_PREFIX)-$(COMMIT)$(GIT_DIRTY)
 
 # Travis CI
-ifeq ($(TRAVIS), true)
-	VERSION := $(TRAVIS_BRANCH)
+ifneq ($(TRAVIS_TAG), )
+	VERSION := $(TRAVIS_TAG)
 endif
 
 # Drone CI
-ifeq ($(DRONE), true)
-	ifeq ($(DRONE_BUILD_EVENT), tag)
-		VERSION := $(DRONE_TAG)
-	else
-		VERSION := $(DRONE_BRANCH)
-	endif
+ifeq ($(DRONE_BUILD_EVENT), tag)
+	VERSION := $(DRONE_TAG)
 endif
 
 # Packages content
