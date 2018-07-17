@@ -88,6 +88,11 @@ GOTEST = $(GOCMD) test $(GO_TEST_ARGS)
 GOTEST_RACE = $(GOTEST) -race
 GOCLEAN = $(GOCMD) clean
 
+ifdef APPVEYOR
+	GODEP := $(CI_PATH)/dep.exe
+endif
+GODEP ?= $(CI_PATH)/dep
+
 # Coverage
 COVERAGE_REPORT = coverage.txt
 COVERAGE_PROFILE = profile.out
@@ -212,6 +217,12 @@ no-changes-in-commit:
 		echo >&2 "generated assets are out of sync"; \
 		exit 2; \
 	fi
+
+godep:
+	export INSTALL_DIRECTORY=$(CI_PATH) ; \
+	test -f $(GODEP) || \
+		curl https://raw.githubusercontent.com/golang/dep/master/install.sh | bash ; \
+	$(GODEP) ensure -v
 
 export POSTGRESQL_VERSION RABBITMQ_VERSION
 ifdef APPVEYOR
