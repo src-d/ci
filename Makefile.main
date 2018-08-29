@@ -20,8 +20,14 @@ DOCKER_PASSWORD ?=
 # will cause make docker-push to also push the latest tag.
 DOCKER_PUSH_LATEST ?=
 # Docker OS/Arch used to match the right binaries.
+# If docker is not installed, fallback to GOOS/GOARCH.
+ifneq ($(shell which docker),)
 DOCKER_OS ?= $(shell docker version -f "{{.Server.Os}}")
 DOCKER_ARCH ?= $(shell docker version -f "{{.Server.Arch}}")
+else
+DOCKER_OS ?= $(shell go env GOOS)
+DOCKER_ARCH ?= $(shell go env GOARCH)
+endif
 
 # Backend services
 POSTGRESQL_VERSION ?=
