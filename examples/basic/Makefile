@@ -2,6 +2,8 @@
 PROJECT = basic
 COMMANDS = cmd/test
 
+PKG_OS = windows darwin linux
+
 # If you need to build more than one dockerfile, you can do so like this:
 # DOCKERFILES = Dockerfile_filename1:repositoryname1 Dockerfile_filename2:repositoryname2 ...
 

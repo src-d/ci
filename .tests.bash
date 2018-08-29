@@ -21,6 +21,11 @@ for example in ${EXAMPLES} ; do
 
 	"${MAKE}" packages
 
+	# Ensure we produce runnable binaries on current platform
+	for b in build/bin/* ; do
+		"$b"
+	done
+
 	POSTGRESQL_VERSION=9.6 RABBITMQ_VERSION=any "${MAKE}" prepare-services
 
 	popd &> /dev/null
