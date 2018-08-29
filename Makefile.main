@@ -135,14 +135,18 @@ $(COMMANDS):
 		BIN=`basename $@` ; \
 	fi && \
 	for os in $(PKG_OS); do \
+		NBIN="$${BIN}" ; \
+		if [ "$${os}" == windows ]; then \
+			NBIN="$${NBIN}.exe"; \
+		fi && \
 		for arch in $(PKG_ARCH); do \
 			mkdir -p $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch} && \
 			$(GO_BUILD_ENV) GOOS=$${os} GOARCH=$${arch} \
-				$(GOBUILD) -o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/$${BIN}" ./$@ && \
+				$(GOBUILD) -o "$(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/$${NBIN}" ./$@ && \
 			if [ "$(DOCKER_OS)" == "$${os}" ] && [ "$(DOCKER_ARCH)" == "$${arch}" ]; then \
 				echo "Linking matching OS/Arch binaries to "build/bin" folder" && \
 				mkdir -p $(BIN_PATH) && \
-				cp -rf $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/$${BIN} $(BIN_PATH); \
+				cp -rf $(BUILD_PATH)/$(PROJECT)_$${os}_$${arch}/$${NBIN} $(BIN_PATH); \
 			fi; \
 		done; \
 	done
