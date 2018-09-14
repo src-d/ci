@@ -114,13 +114,14 @@ customizable to cover edge cases of complex builds.
 The `no-changes-in-commit` rule checks if not ignored files in the repository have changed or have been added.
 Useful to detect non-commited generated code for projects based on `go generate`, `gobindata` or `dep ensure`.
 
+`dep ensure` can be executed with rule `godep`. It downloads the latest version of the tool and executes it.
+
 Example:
 
 ```shell
 validate-commit: dependencies generate-assets no-changes-in-commit
 
-dependencies:
-  dep ensure
+dependencies: godep
 
 generate-assets:
   yarn build
