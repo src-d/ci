@@ -74,6 +74,15 @@ docker images. The images are tagged with the current value of `VERSION`. If
 `DOCKER_PUSH_LATEST` is provided with any value, a `latest` tag is created and
 pushed too.
 
+To push `latest` tag automatically when the tag conforms a semantic
+version (`v1.2.3`) you can either use `docker-push-latest-release` or the
+variable `IS_RELEASE` in your makefile:
+
+```makefile
+release-docker:
+  @DOCKER_PUSH_LATEST=$(IS_RELEASE) make docker-push
+```
+
 ### External service setup
 
 The `ci-install` rule sets up external services consistently across different CI providers

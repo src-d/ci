@@ -61,6 +61,9 @@ ifeq ($(DRONE_BUILD_EVENT), tag)
 	VERSION := $(DRONE_TAG)
 endif
 
+# IS_RELEASE is "true" if tag is semantic version and not a pre-release
+IS_RELEASE := $(shell echo $(VERSION) | grep -q -E '^v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$$' && echo "true" || true)
+
 # Packages content
 PKG_OS ?= darwin linux
 PKG_ARCH = amd64
@@ -201,6 +204,9 @@ docker-push: docker-login docker-build
 			docker push $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:latest; \
 		fi; \
 	done;
+
+docker-push-latest-release:
+	@DOCKER_PUSH_LATEST=$(IS_RELEASE) make docker-push
 
 packages: build
 	@cd $(BUILD_PATH); \
