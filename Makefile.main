@@ -102,6 +102,15 @@ COVERAGE_MODE = atomic
 
 PACKAGES = $(shell go list ./... | grep -v '/vendor/')
 
+# Helm deployment information
+HELM_VERSION ?= v2.8.2
+HELM_DEPLOY_SCRIPT ?= https://raw.githubusercontent.com/src-d/ci/v1/scripts/helm-deploy.sh
+HELM_RELEASE ?=
+HELM_CHART ?=
+K8S_NAMESPACE ?= default
+K8S_SERVICE_ACCOUNT ?= default
+HELM_ARGS ?=
+
 # Rules
 
 .SUFFIXES:
@@ -252,6 +261,20 @@ ci-script: | test-coverage codecov packages
 	@echo
 endif
 
+install-helm:
+	GET_HELM=`mktemp` ; \
+	trap "rm -f $${GET_HELM}" EXIT; \
+	curl -L https://raw.githubusercontent.com/helm/helm/master/scripts/get > $${GET_HELM}; \
+	chmod +x $${GET_HELM} ; \
+	DESIRED_VERSION=$(HELM_VERSION) $${GET_HELM}
+
+deploy: install-helm
+	HELM_DEPLOY=`mktemp` ; \
+	trap "rm -f $${HELM_DEPLOY}" EXIT; \
+	curl -L $(HELM_DEPLOY_SCRIPT) > $${HELM_DEPLOY}; \
+	chmod +x $${HELM_DEPLOY}; \
+	$${HELM_DEPLOY} $(HELM_RELEASE) $(HELM_CHART) $(K8S_NAMESPACE) $(K8S_SERVICE_ACCOUNT) $(HELM_ARGS)
+
 .PHONY: dependencies $(DEPENDENCIES) \
 		build $(COMMANDS) \
 		test test-race test-coverage \
@@ -260,4 +283,5 @@ endif
 		clean \
 		no-changes-in-commit \
 		prepare-services \
-		ci-script ci-install
+		ci-script ci-install \
+		install-helm deploy
