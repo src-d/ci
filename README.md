@@ -6,27 +6,30 @@ This project contains the common CI configuration for all source{d} Go projects,
 * Automatic upload of built binaries to GitHub releases on tag.
 * Tests with coverage (using codecov.io).
 
-Right now, this has only been tested with TravisCI.
+It supports Travis CI (Linux and macOS) and Appveyor (Windows).
 
-- [Makefile.main](https://github.com/src-d/ci/tree/master/examples/Makefile.main): a common Makefile that should be included in all source{d}'s Go projects. Just set up some variables:
+- [Makefile](https://github.com/src-d/ci/tree/v1/examples/basic/Makefile): a common Makefile that should be included in all source{d}'s Go projects. Just set up some variables:
   - **PROJECT**: the project's name (mandatory).
   - **COMMANDS**: packages and subpackages to be compiled as binaries (mandatory).
   - **DOCKERFILES**: dockerfiles presents in the project (optional).
 
-- [.travis.yml](https://github.com/src-d/ci/tree/master/examples/.travis.yml): config file used by TravisCI to create the build and such. Ideally, it's just necessary to specify the CODECOV_TOKEN and the proper project's name under the deploy section.
+- [.travis.yml](https://github.com/src-d/ci/tree/v1/examples/basic/.travis.yml): config file used by Travis CI to create the build the project.
 
-Use the files under [examples](https://github.com/src-d/ci/tree/master/examples) as a template.
+Use the files under [examples](https://github.com/src-d/ci/tree/v1/examples/basic) as a template.
 
-You will need to configure the following environment variables and make them available during the build process:
+In order to publish Docker images, you will need to configure the following environment variables and make them available during the build process:
 
-* `DOCKER_ORG`: docker organisation name.
 * `DOCKER_USERNAME`: username of the registry account.
 * `DOCKER_PASSWORD`: password of the registry account.
-* `DOCKER_REGISTRY`: docker registry where images will be pushed.
 
-Also, for publishing to GitHub, you will need to provide a GitHub API key.
+And optionally:
 
-For that, in travis, you can use the `env`. If your project is public, make sure to use [secrets](https://docs.travis-ci.com/user/encryption-keys/).
+* `DOCKER_ORG`: docker organisation name (defaults to `srcd`).
+* `DOCKER_REGISTRY`: docker registry where images will be pushed (defaults to Docker Hub).
+
+Also, for publishing to GitHub, you will need to provide a GitHub API token in the `GITHUB_TOKEN` environment variable. If your project is public, make sure that the variable is marked as not visible.
+
+**NOTE to source{d} developers: request Docker and GitHub token setup to the Infrastructure Team.**
 
 ## Tasks
 
