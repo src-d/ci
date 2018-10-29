@@ -5,7 +5,7 @@
 set -eo pipefail
 
 if [[ $# < 4 ]]; then
-    echo "Usage: $0 release chart user namespace [helm args]"
+    echo "Usage: $0 release chart namespace service-account [helm args]"
     exit 1
 fi
 
