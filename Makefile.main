@@ -19,6 +19,9 @@ DOCKER_PASSWORD ?=
 # When `make docker-push`, setting DOCKER_PUSH_LATEST to any non-empty value
 # will cause make docker-push to also push the latest tag.
 DOCKER_PUSH_LATEST ?=
+# When `make docker-push`, setting DOCKER_PUSH_MASTER to any non-empty value
+# will cause make docker-push to also push when on the master branch.
+DOCKER_PUSH_MASTER ?=
 # Docker OS/Arch used to match the right binaries.
 # If docker is not installed, fallback to GOOS/GOARCH.
 ifneq ($(shell which docker),)
@@ -199,7 +202,7 @@ docker-build: $(COMMANDS)
 	done;
 
 docker-push: docker-login docker-build
-	@if [ "$(BRANCH)" == "master" ]; then \
+	@if [ "$(BRANCH)" == "master" && "$(DOCKER_PUSH_MASTER)" == "" ]; then \
 		echo "docker-push is disabled on master branch" \
 		exit 1; \
 	fi; \
