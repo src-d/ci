@@ -36,7 +36,9 @@ jobs:
         provider: releases
         api_key: $GITHUB_TOKEN
         file_glob: true
-        file: build/*.tar.gz
+        file:
+         - build/*.tar.gz
+         - build/*.zip
         skip_cleanup: true
       after_deploy:
         - make docker-push
