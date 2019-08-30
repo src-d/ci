@@ -79,6 +79,7 @@ GO_TAGS ?=
 GO_GET_ARGS ?= -v -t
 GO_TEST_ARGS ?= -v
 GO_BUILD_ARGS ?= -ldflags "$(LD_FLAGS)"
+GOPROXY ?= https://proxy.golang.org
 # Environment variable to use at `go build` calls.
 GO_BUILD_ENV ?=
 
@@ -90,9 +91,9 @@ ifneq ($(GO_TAGS), )
 endif
 
 GOCMD = go
-GOGET = $(GOCMD) get $(GO_GET_ARGS)
-GOBUILD = $(GOCMD) build $(GO_BUILD_ARGS)
-GOTEST = $(GOCMD) test $(GO_TEST_ARGS)
+GOGET = GOPROXY=$(GOPROXY) $(GOCMD) get $(GO_GET_ARGS)
+GOBUILD = GOPROXY=$(GOPROXY) $(GOCMD) build $(GO_BUILD_ARGS)
+GOTEST = GOPROXY=$(GOPROXY) $(GOCMD) test $(GO_TEST_ARGS)
 GOTEST_RACE = $(GOTEST) -race
 GOCLEAN = $(GOCMD) clean
 
