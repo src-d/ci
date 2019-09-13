@@ -240,6 +240,8 @@ no-changes-in-commit:
 		git status --untracked-files=normal --porcelain; \
 		echo >&2 "generated assets are out of sync"; \
 		exit 2; \
+	else \
+		echo there is nothing pending to be commited; \
 	fi
 
 godep:
