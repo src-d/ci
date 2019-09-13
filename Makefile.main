@@ -198,7 +198,7 @@ docker-build: $(COMMANDS)
 	for d in $(DOCKERFILES); do \
 		dockerfile=`echo $${d} | cut -d":" -f 1`; \
 		repository=`echo $${d} | cut -d":" -f 2`; \
-		docker build -t $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(VERSION) -f $$dockerfile .; \
+		docker build --pull -t $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(VERSION) -f $$dockerfile .; \
 	done;
 
 docker-push: docker-login docker-build
