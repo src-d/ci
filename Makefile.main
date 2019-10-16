@@ -107,7 +107,7 @@ docker-push:
 		dockerfile=`echo $${d} | cut -d":" -f 1`; \
 		repository=`echo $${d} | cut -d":" -f 2`; \
 		echo "Building dockerfile $$dockerfile for repository $$repository."; \
-		docker build -t $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(BRANCH) -f $(WORKDIR)/$$dockerfile . && \
+		docker build --pull -t $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(BRANCH) -f $(WORKDIR)/$$dockerfile . && \
 		docker push $(DOCKER_REGISTRY)/$(DOCKER_ORG)/$${repository}:$(BRANCH); \
 		if [ $$? != 0 ]; then \
 			echo "Something went wrong pushing the image."; \
