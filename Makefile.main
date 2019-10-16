@@ -266,10 +266,10 @@ ci-install: | prepare-services dependencies
 	@echo
 
 ifeq ($($strip $(COMMANDS)),)
-ci-script: | test-coverage codecov
+ci-script: | test-coverage codecov test-race
 	@echo
 else
-ci-script: | test-coverage codecov packages
+ci-script: | test-coverage codecov test-race packages
 	@echo
 endif
 
