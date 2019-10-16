@@ -118,6 +118,10 @@ K8S_NAMESPACE ?= default
 K8S_SERVICE_ACCOUNT ?= default
 HELM_ARGS ?=
 
+# Python index update
+PYTHON_INDEX_SIGNATURE ?= Infrastructure Team <infrastructure@sourced.tech>
+PYTHON_INDEX_NAME ?= src-d/python-package-index
+
 # Rules
 
 .SUFFIXES:
@@ -287,6 +291,21 @@ deploy: install-helm
 	chmod +x $${HELM_DEPLOY}; \
 	$${HELM_DEPLOY} $(HELM_RELEASE) $(HELM_CHART) $(K8S_NAMESPACE) $(K8S_SERVICE_ACCOUNT) $(HELM_ARGS)
 
+install-python-indexer:
+	pip3 install --user pypi-on-github-indexer
+
+update-python-index: install-python-indexer
+	@if [ -n "$(TRAVIS_TAG)" ]; then \
+		python3 -m pypi_on_github_indexer --signature "$(PYTHON_INDEX_SIGNATURE)" \
+						  --github-token "$(GITHUB_TOKEN)" \
+						  --index-name "$(PYTHON_INDEX_NAME)" \
+						  --repo-url "https://github.com/$(TRAVIS_SLUG)" \
+						  --repo-tag "$(TRAVIS_TAG)"; \
+	else \
+		echo "This action is only currently supported while tagging in Travis CI"; \
+		exit 1; \
+	fi
+
 .PHONY: dependencies $(DEPENDENCIES) \
 		build $(COMMANDS) \
 		test test-race test-coverage \
@@ -296,4 +315,6 @@ deploy: install-helm
 		no-changes-in-commit \
 		prepare-services \
 		ci-script ci-install \
+		update-python-index \
+		install-python-indexer \
 		install-helm deploy
