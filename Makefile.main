@@ -55,6 +55,16 @@ GIT_DIRTY = $(shell test -n "`git status --porcelain`" && echo "-dirty" || true)
 DEV_PREFIX := dev
 VERSION ?= $(DEV_PREFIX)-$(COMMIT)$(GIT_DIRTY)
 
+# Linter
+LINTER_VERSION ?= v1.21.0
+LINTER_BINARY_PATH := bin/golangci-lint
+LINTER_RUN := run
+LINTER_CONFIG := .golangci.yml
+LINTER_TARGET ?= ./...
+# should start with option --no-config, see https://github.com/golangci/golangci-lint#comparison-with-gometalinter
+# example: --no-config --issues-exit-code=0 --timeout=30m --disable-all --enable=deadcode --enable=gocyclo --enable=golint --enable=varcheck
+LINTER_NON_CONFIG_OPTIONS ?=
+
 # Travis CI
 ifneq ($(TRAVIS_TAG), )
 	VERSION := $(TRAVIS_TAG)
@@ -311,6 +321,21 @@ update-python-index: install-python-indexer
 		exit 1; \
 	fi
 
+linter:
+	if [ ! -f "$(LINTER_BINARY_PATH)" ]; then \
+		wget -O - -q https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s $(LINTER_VERSION); \
+	fi ; \
+	if [ ! -f "$(LINTER_CONFIG)" ]; then \
+    	echo -e "\033[1;32mWARNING! Linter config not found, will run in a non-config mode"; \
+		if [ ! -z "$(LINTER_NON_CONFIG_OPTIONS)" ]; then \
+			$(LINTER_BINARY_PATH) $(LINTER_RUN) $(LINTER_NON_CONFIG_OPTIONS) $(LINTER_TARGET) ; \
+		else \
+			echo -e "\033[1;32mWARNING! Linter's non-config options are not set"; \
+		fi ; \
+    else \
+		$(LINTER_BINARY_PATH) $(LINTER_RUN) $(LINTER_TARGET) ; \
+    fi
+
 .PHONY: dependencies $(DEPENDENCIES) \
 		build $(COMMANDS) \
 		test test-race test-coverage \
@@ -322,4 +347,5 @@ update-python-index: install-python-indexer
 		ci-script ci-install \
 		update-python-index \
 		install-python-indexer \
-		install-helm deploy
+		install-helm deploy \
+		linter
