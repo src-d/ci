@@ -2,6 +2,7 @@
 PROJECT ?=
 COMMANDS ?=
 DEPENDENCIES ?=
+TEST_RACE ?=
 
 # Default shell
 SHELL := /bin/bash
@@ -136,7 +137,11 @@ test:
 	$(GOTEST) $(PACKAGES)
 
 test-race:
-	$(GOTEST_RACE) $(PACKAGES)
+	if [ -z "$(TEST_RACE)" ]; then \
+		echo -e "\033[0;31mWARNING! Testing with race detection is disabled, please consider toggling it on setting TEST_RACE ?= true"; \
+	else \
+		$(GOTEST_RACE) $(PACKAGES); \
+	fi; \
 
 test-coverage:
 	echo "" > $(COVERAGE_REPORT); \
@@ -270,10 +275,10 @@ ci-install: | prepare-services dependencies
 	@echo
 
 ifeq ($($strip $(COMMANDS)),)
-ci-script: | test-coverage codecov
+ci-script: | test-coverage codecov test-race
 	@echo
 else
-ci-script: | test-coverage codecov packages
+ci-script: | test-coverage codecov test-race packages
 	@echo
 endif
 
