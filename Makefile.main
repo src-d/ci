@@ -234,8 +234,13 @@ packages: build
 	@cd $(BUILD_PATH); \
 	for os in $(PKG_OS); do \
 		for arch in $(PKG_ARCH); do \
-			TAR_VERSION=`echo $(VERSION) | tr "/" "-"`; \
-			tar -cvzf $(PROJECT)_$${TAR_VERSION}_$${os}_$${arch}.tar.gz $(PROJECT)_$${os}_$${arch}/; \
+			ARCHIVE_VERSION=`echo $(VERSION) | tr "/" "-"`; \
+			ARCHIVE_NAME=$(PROJECT)_$${ARCHIVE_VERSION}_$${os}_$${arch}; \
+			if [ $${os} == "windows" ]; then \
+				zip -r $${ARCHIVE_NAME}.zip $(PROJECT)_$${os}_$${arch}/; \
+			else \
+				tar -cvzf $${ARCHIVE_NAME}.tar.gz $(PROJECT)_$${os}_$${arch}/; \
+			fi; \
 		done; \
 	done
 
